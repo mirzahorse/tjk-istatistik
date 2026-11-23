@@ -64,6 +64,14 @@ def main():
     a = ap.parse_args()
     os.makedirs(a.klasor, exist_ok=True)
 
+    # bağlantı testi: bilinen bir dosyayı her seferinde gerçekten indirmeyi dener
+    test = subprocess.run(["curl", "-sS", "-L", "--max-time", "30", "-A", "Mozilla/5.0", "-o", os.devnull,
+                           "-w", "%{http_code}", url(dt.date(2026, 11, 22), "İzmir")], capture_output=True, text=True)
+    if test.stdout.strip() != "200":
+        print(f"TJK'ya erişilemedi (HTTP {test.stdout.strip() or 'yok'}). {test.stderr.strip()}")
+        sys.exit(1)
+    print("TJK bağlantı testi: tamam", flush=True)
+
     bitis = dt.date.today() - dt.timedelta(days=1)
     baslangic = max(YIL_BASI, bitis - dt.timedelta(days=a.gun - 1)) if a.gun else YIL_BASI
     isler = []
