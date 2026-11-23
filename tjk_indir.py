@@ -3,7 +3,7 @@
 TJK resmi günlük sonuç CSV'lerini indirir (medya-cdn.tjk.org).
 
 Kullanım:
-    python3 tjk_indir.py                  # 1 Ocak'tan dünkü güne kadar eksik olanları indirir
+    python3 tjk_indir.py                  # 1 Ocak'tan bugüne kadar eksik olanları indirir (bugün ve dün her seferinde yenilenir)
     python3 tjk_indir.py --gun 7          # yalnızca son 7 günü dener (otomatik güncelleme bunu kullanır)
     python3 tjk_indir.py --klasor veri    # dosyaların ineceği klasör (varsayılan: veri)
 
@@ -16,6 +16,7 @@ import subprocess
 import sys
 import time
 import urllib.parse
+from zoneinfo import ZoneInfo
 from concurrent.futures import ThreadPoolExecutor
 
 HIPODROMLAR = ["İstanbul", "Ankara", "İzmir", "Bursa", "Adana", "Antalya",
@@ -31,9 +32,10 @@ def url(gun, sehir):
     return "https://medya-cdn.tjk.org" + urllib.parse.quote(yol)
 
 
-def indir(klasor, gun, sehir):
+def indir(klasor, gun, sehir, zorla=False):
+    """zorla=True: dosya varsa bile yeniden indirir (gün içinde tamamlanan sonuçlar için)."""
     hedef = os.path.join(klasor, f"{gun:%Y-%m-%d}_{sehir}.csv")
-    if os.path.exists(hedef) and os.path.getsize(hedef) > 200:
+    if not zorla and os.path.exists(hedef) and os.path.getsize(hedef) > 200:
         return "var"
     gecici = hedef + ".part"
     for deneme in range(3):
@@ -47,12 +49,15 @@ def indir(klasor, gun, sehir):
                 if b"<html" in f.read(300).lower():
                     os.remove(gecici)
                     return "yok"
+            if os.path.exists(hedef) and open(hedef, "rb").read() == open(gecici, "rb").read():
+                os.remove(gecici)
+                return "var"
             os.replace(gecici, hedef)
             return "indi"
         if os.path.exists(gecici):
             os.remove(gecici)
         if kod in ("404", "403", "400"):
-            return "yok"
+            return "var" if os.path.exists(hedef) else "yok"
         time.sleep(2 * (deneme + 1))
     return "hata"
 
@@ -72,7 +77,8 @@ def main():
         sys.exit(1)
     print("TJK bağlantı testi: tamam", flush=True)
 
-    bitis = dt.date.today() - dt.timedelta(days=1)
+    bugun = dt.datetime.now(ZoneInfo("Europe/Istanbul")).date()
+    bitis = bugun
     baslangic = max(YIL_BASI, bitis - dt.timedelta(days=a.gun - 1)) if a.gun else YIL_BASI
     isler = []
     gun = baslangic
@@ -83,7 +89,7 @@ def main():
 
     sayac = {"indi": 0, "var": 0, "yok": 0, "hata": 0}
     with ThreadPoolExecutor(ESZAMANLI) as ex:
-        for (g, s), sonuc in zip(isler, ex.map(lambda x: indir(a.klasor, *x), isler)):
+        for (g, s), sonuc in zip(isler, ex.map(lambda x: indir(a.klasor, *x, zorla=(bugun - x[0]).days <= 1), isler)):
             sayac[sonuc] += 1
             if sonuc == "hata":
                 print(f"  ağ hatası: {g} {s}", flush=True)
