@@ -5,9 +5,9 @@ Bu site bağımsızdır, TJK ile bağlantısı yoktur.
 
 ## Nasıl çalışır
 
-6 saatte bir (İstanbul saatiyle 00:17, 06:17, 12:17, 18:17) GitHub Actions şunları yapar:
+Her saat (xx:17) GitHub Actions şunları yapar (bilgisayarınızın açık olması gerekmez):
 
-1. `tjk_indir.py` son 7 günün resmi sonuç CSV'lerini `veri/` klasörüne indirir; bugünün ve dünün dosyaları her seferinde yeniden kontrol edilir.
+1. `tjk_indir.py` bugünün ve dünün resmi sonuç CSV'lerini `veri/` klasörüne indirir (günde bir kez, 06:17'de, son 7 güne bakar).
 2. `build_site.py` bu CSV'lerden `site/data.js` dosyasını yeniden üretir.
 3. Değişiklik varsa depoya kaydeder. Netlify bu kaydı görüp siteyi kendiliğinden yayınlar.
 
