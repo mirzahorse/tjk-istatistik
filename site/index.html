@@ -4,63 +4,75 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>TJK 2026 İstatistikleri</title>
+<link rel="icon" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f7f6f3;--panel:#fff;--fg:#1f1f1d;--mut:#6b6a66;--line:#e4e2dc;--acc:#2f6f4f;--acc2:#a8d5ba;--bad:#b3412e;--good:#2f7d4f;--r:10px}
-@media (prefers-color-scheme:dark){:root{--bg:#191917;--panel:#232321;--fg:#ecebe7;--mut:#a3a29d;--line:#383734;--acc:#6cc193;--acc2:#2f5a43;--bad:#e07a66;--good:#6cc193}}
+:root{--yesil:#00F134;--lacivert:#070E1D;--bg:#070E1D;--panel:#0E1A30;--panel2:#14223D;--fg:#F2F5F8;--mut:#93A0B5;--line:#22314F;--acc:#00F134;--acc2:#0B6B25;--bad:#FF6B5A;--good:#00F134;--r:6px}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
-header{padding:20px 20px 0;max-width:1180px;margin:0 auto}
-h1{font-size:24px;margin:0 0 4px;font-weight:650}
-.sub{color:var(--mut);font-size:13px;margin:0}
-nav{display:flex;gap:4px;overflow-x:auto;max-width:1180px;margin:16px auto 0;padding:0 20px;border-bottom:1px solid var(--line)}
-nav button{background:none;border:0;border-bottom:2px solid transparent;color:var(--mut);font:inherit;font-weight:550;padding:10px 12px;cursor:pointer;white-space:nowrap}
-nav button.on{color:var(--fg);border-color:var(--acc)}
-main{max-width:1180px;margin:0 auto;padding:16px 20px 40px}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+h1,h2,nav button,.tile .v{font-family:"Space Grotesk",Inter,sans-serif}
+.ust{background:var(--yesil);color:var(--lacivert)}
+header{padding:16px 20px;max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:16px}
+header img{width:64px;height:64px;flex:none}
+h1{font-size:26px;margin:0;font-weight:700;letter-spacing:-.01em;text-transform:uppercase}
+.sub{color:var(--lacivert);opacity:.75;font-size:13px;margin:2px 0 0;font-weight:500}
+.navwrap{background:var(--lacivert);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+nav{display:flex;gap:2px;overflow-x:auto;max-width:1180px;margin:0 auto;padding:0 20px}
+nav button{background:none;border:0;border-bottom:3px solid transparent;color:var(--mut);font-size:15px;font-weight:600;padding:12px 12px 9px;cursor:pointer;white-space:nowrap;text-transform:uppercase;letter-spacing:.02em}
+nav button:hover{color:var(--fg)}
+nav button.on{color:var(--yesil);border-color:var(--yesil)}
+main{max-width:1180px;margin:0 auto;padding:18px 20px 40px}
 .filters{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:end;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;margin-bottom:16px}
 .filters label,.ctl label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--mut)}
-select,input{font:inherit;font-size:14px;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:6px 8px;min-width:0}
-.btn{font:inherit;font-size:13px;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:7px;padding:7px 10px;cursor:pointer}
-.btn:hover{border-color:var(--acc)}
+select,input{font:inherit;font-size:14px;color:var(--fg);background:var(--lacivert);border:1px solid var(--line);border-radius:4px;padding:6px 8px;min-width:0;color-scheme:dark}
+select:focus,input:focus{outline:2px solid var(--yesil);outline-offset:-1px}
+.btn{font:inherit;font-size:13px;font-weight:600;background:var(--yesil);color:var(--lacivert);border:0;border-radius:4px;padding:8px 12px;cursor:pointer}
+.btn:hover{filter:brightness(1.1)}
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px}
-.tile{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
-.tile .k{font-size:12px;color:var(--mut)}.tile .v{font-size:26px;font-weight:600;margin-top:2px;font-variant-numeric:tabular-nums}
+.tile{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--yesil);border-radius:var(--r);padding:12px 14px}
+.tile .k{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.03em}.tile .v{font-size:28px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums}
 .tile .s{font-size:12px;color:var(--mut)}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;min-width:0;margin-bottom:14px}
 .grid .card{margin-bottom:0}
 .grid+.card,.card+.grid,.grid+.grid{margin-top:14px}
-.card h2{font-size:16px;margin:0 0 2px;font-weight:620}
+.card h2{font-size:17px;margin:0 0 2px;font-weight:700}
 .card .d{font-size:13px;color:var(--mut);margin:0 0 10px}
+.card .d b{color:var(--fg)}
 .ctl{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:end;margin-bottom:10px}
 .tw{overflow-x:auto}.tw.tall{max-height:460px;overflow-y:auto}
 table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
-th{text-align:left;font-size:12px;font-weight:600;color:var(--mut);border-bottom:1px solid var(--line);padding:6px 8px;white-space:nowrap;position:sticky;top:0;background:var(--panel)}
-td{padding:5px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{text-align:left;font-size:11px;font-weight:600;color:var(--mut);text-transform:uppercase;letter-spacing:.03em;border-bottom:1px solid var(--line);padding:7px 8px;white-space:nowrap;position:sticky;top:0;background:var(--panel)}
+td{padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+tbody tr:hover td{background:var(--panel2)}
 .r{text-align:right}.pos{color:var(--good);font-weight:600}.neg{color:var(--bad);font-weight:600}
 .empty{color:var(--mut);font-size:13px;padding:10px 0}
-svg text{fill:var(--mut);font-size:11px}svg .val{fill:var(--fg);font-size:11px;font-weight:600}
-svg .bar{fill:var(--acc)}svg .bar2{fill:var(--acc2)}svg .grd{stroke:var(--line)}svg .ln{stroke:var(--acc);stroke-width:2;fill:none}svg .dot{fill:var(--acc)}
+svg text{fill:var(--mut);font-size:11px;font-family:Inter,sans-serif}svg .val{fill:var(--fg);font-size:11px;font-weight:600}
+svg .bar{fill:var(--yesil)}svg .bar2{fill:#7CF79A}svg .grd{stroke:var(--line)}svg .ln{stroke:var(--yesil);stroke-width:2.5;fill:none}svg .dot{fill:var(--yesil)}
+svg rect:hover{filter:brightness(1.2)}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}
-.chip{font-size:13px;border:1px solid var(--line);background:var(--bg);border-radius:20px;padding:4px 10px;cursor:pointer}
-.chip.on{border-color:var(--acc);color:var(--acc);font-weight:600}
-.leg{font-size:12px;color:var(--mut);display:flex;gap:14px;margin-top:6px}.leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.chip{font:inherit;font-size:13px;color:var(--fg);border:1px solid var(--line);background:var(--lacivert);border-radius:20px;padding:4px 10px;cursor:pointer}
+.chip small{color:var(--mut)}
+.chip.on{border-color:var(--yesil);color:var(--yesil);font-weight:600}
 footer{max-width:1180px;margin:0 auto;padding:0 20px 30px;color:var(--mut);font-size:12px}
 .hidden{display:none}
 </style>
 </head>
 <body>
-<header>
-<h1>TJK 2026 İstatistikleri</h1>
-<p class="sub" id="ozetSatir">Yükleniyor…</p>
-</header>
-<nav id="sekmeler">
+<div class="ust"><header>
+<img src="logo.png" alt="Logo">
+<div><h1>TJK 2026 İstatistikleri</h1>
+<p class="sub" id="ozetSatir">Yükleniyor…</p></div>
+</header></div>
+<div class="navwrap"><nav id="sekmeler">
 <button data-tab="genel" class="on">Genel</button>
 <button data-tab="atlar">Atlar</button>
 <button data-tab="insan">Jokey &amp; Antrenör</button>
 <button data-tab="yetis">Yetiştiricilik</button>
 <button data-tab="kosul">Koşu koşulları</button>
 <button data-tab="sonuc">Sonuçlar</button>
-</nav>
+</nav></div>
 <main>
 <div class="filters" id="filtreler">
 <label>Başlangıç<input type="date" id="f_bas"></label>
@@ -81,7 +93,7 @@ footer{max-width:1180px;margin:0 auto;padding:0 20px 30px;color:var(--mut);font-
 <script>
 if (!window.TJK_DATA) {
   document.getElementById('ozetSatir').textContent = 'Veri dosyası (data.js) bulunamadı. index.html ile data.js aynı klasörde olmalı.';
-  document.getElementById('ozetSatir').style.color = '#b3412e';
+  document.getElementById('ozetSatir').style.color = '#B00020';
   throw new Error('data.js yüklenemedi');
 }
 </script>
