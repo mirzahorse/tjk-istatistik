@@ -1,0 +1,112 @@
+#!/usr/bin/env python3
+"""
+TJK web uygulamasının veri dosyasını (data.js) üretir.
+
+Kullanım:
+    python3 build_site.py <TJK csv klasörü> [çıktı klasörü]
+    örn: python3 build_site.py ~/Downloads/tjk_2026_csv .
+
+Girdi: tjk_indir.py'nin indirdiği resmi "GunlukYarisSonuclari" CSV'leri.
+Çıktı: data.js (index.html bunu okur). Başka hiçbir şeye gerek yoktur.
+"""
+import datetime as dt
+import json
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from parse_tjk import parse_file  # aynı klasörde
+
+
+def main():
+    src = os.path.expanduser(sys.argv[1])
+    out_dir = sys.argv[2] if len(sys.argv) > 2 else os.path.dirname(os.path.abspath(__file__))
+    rows = []
+    for ad in sorted(os.listdir(src)):
+        if ad.endswith(".csv") and "_" in ad:
+            rows += parse_file(os.path.join(src, ad))
+    rows.sort(key=lambda r: (r["tarih"], r["hipodrom"], r["kosu_no"], r["sira"]))
+
+    # --- atın önceki koşusu: dinlenme süresi ve yeni takılan ekipman
+    son = {}
+    for r in rows:
+        key = (r["at"], r["baba"], r["anne"])
+        gun = dt.date.fromisoformat(r["tarih"])
+        onceki = son.get(key)
+        r["ara"] = (gun - onceki[0]).days if onceki else -1
+        if onceki:
+            yeni = [e for e in r["ekipman"].split() if e not in onceki[1]]
+            r["yeni_ekip"] = " ".join(yeni)
+        else:
+            r["yeni_ekip"] = ""
+        son[key] = (gun, set(r["ekipman"].split()))
+
+    # --- sözlükler
+    D = {}
+
+    def code(field, val):
+        d = D.setdefault(field, {"list": [], "idx": {}})
+        val = val or ""
+        if val not in d["idx"]:
+            d["idx"][val] = len(d["list"])
+            d["list"].append(val)
+        return d["idx"][val]
+
+    races, ridx = {k: [] for k in ["t", "h", "no", "ad", "sn", "tur", "irk", "m", "p", "rek", "ikr", "saat", "n"]}, {}
+    S = {k: [] for k in ["r", "s", "at", "ba", "an", "y", "rk", "c", "kg", "fz", "j", "ap", "sh", "an2",
+                         "st", "ds", "agf", "hp", "sn", "g", "f", "e", "ye", "ara"]}
+    for r in rows:
+        rk = (r["tarih"], r["hipodrom"], r["kosu_no"])
+        if rk not in ridx:
+            ridx[rk] = len(races["t"])
+            races["t"].append(code("t", r["tarih"]))
+            races["h"].append(code("h", r["hipodrom"]))
+            races["no"].append(r["kosu_no"])
+            races["ad"].append(code("ad", r.get("kosu_adi", "")))
+            races["sn"].append(code("sn", r["sinif"]))
+            races["tur"].append(code("tur", r["kosu_turu"]))
+            races["irk"].append(code("irk", r["irk"]))
+            races["m"].append(r["mesafe"] or 0)
+            races["p"].append(code("p", r["pist"]))
+            races["rek"].append(code("rek", r["rekor"]))
+            races["ikr"].append(r.get("ikramiye_1") or 0)
+            races["saat"].append(code("saat", r["saat"]))
+            races["n"].append(r["kosan_sayisi"])
+        S["r"].append(ridx[rk])
+        S["s"].append(r["sira"] if r["durum"] == "Derece aldı" else -r["sira"])  # eksi: derecesiz
+        S["at"].append(code("at", r["at"]))
+        S["ba"].append(code("ba", r["baba"]))
+        S["an"].append(code("an", r["anne"]))
+        S["y"].append(r["yas"])
+        S["rk"].append(code("rk", r["renk"]))
+        S["c"].append(code("c", r["cinsiyet"]))
+        S["kg"].append(round((r["kilo"] or 0) * 10))
+        S["fz"].append(round((r["fazla_kilo"] or 0) * 10))
+        S["j"].append(code("j", r["jokey"]))
+        S["ap"].append(1 if r["apranti"] else 0)
+        S["sh"].append(code("sh", r["sahip"]))
+        S["an2"].append(code("tr", r["antrenor"]))
+        S["st"].append(r["start"] or 0)
+        S["ds"].append(1 if r["dis_start"] else 0)
+        S["agf"].append(r["agf_sira"] or 0)
+        S["hp"].append(r["hp"] if r["hp"] is not None else -1)
+        S["sn"].append(round(r["derece_sn"] * 100) if r["derece_sn"] else -1)
+        S["g"].append(round(r["ganyan"] * 100) if r["ganyan"] else -1)
+        S["f"].append(code("f", r["fark"]))
+        S["e"].append(code("e", r["ekipman"]))
+        S["ye"].append(code("e", r["yeni_ekip"]))
+        S["ara"].append(r["ara"])
+
+    data = {"olusturma": rows[-1]["tarih"],
+            "ilk": rows[0]["tarih"], "son": rows[-1]["tarih"],
+            "dict": {k: v["list"] for k, v in D.items()}, "races": races, "starts": S}
+    path = os.path.join(out_dir, "data.js")
+    with open(path, "w", encoding="utf-8") as f:
+        f.write("window.TJK_DATA=")
+        json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
+        f.write(";")
+    print(f"{len(races['t'])} koşu, {len(rows)} start -> {path} ({os.path.getsize(path) // 1024} KB)")
+
+
+if __name__ == "__main__":
+    main()

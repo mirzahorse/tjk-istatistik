@@ -1,0 +1,42 @@
+name: TJK verisini güncelle
+
+on:
+  schedule:
+    - cron: "17 5 * * *"   # her gün 08:17 (İstanbul saati)
+  workflow_dispatch:        # Actions sekmesinden elle de çalıştırılabilir
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tjk-guncelle
+  cancel-in-progress: false
+
+jobs:
+  guncelle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Son 7 günün sonuçlarını TJK'dan indir
+        run: python3 tjk_indir.py --klasor veri --gun 7
+
+      - name: Sitenin veri dosyasını yeniden oluştur
+        run: python3 build_site.py veri site
+
+      - name: Değişiklik varsa kaydet
+        run: |
+          git config user.name "tjk-guncelleme"
+          git config user.email "actions@users.noreply.github.com"
+          git add veri site/data.js
+          if git diff --cached --quiet; then
+            echo "Yeni sonuç yok."
+          else
+            git commit -m "Veri güncellendi: $(date -u +%Y-%m-%d)"
+            git push
+          fi
