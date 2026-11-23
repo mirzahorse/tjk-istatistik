@@ -9,7 +9,9 @@ Her saat (xx:17) GitHub Actions şunları yapar (bilgisayarınızın açık olma
 
 1. `tjk_indir.py` bugünün ve dünün resmi sonuç CSV'lerini `veri/` klasörüne indirir (günde bir kez, 06:17'de, son 7 güne bakar).
 2. `build_site.py` bu CSV'lerden `site/data.js` dosyasını yeniden üretir.
-3. Değişiklik varsa depoya kaydeder. Netlify bu kaydı görüp siteyi kendiliğinden yayınlar.
+3. Değişiklik varsa depoya kaydeder ve siteyi GitHub Pages'te yeniden yayınlar.
+
+Site adresi: https://mirzahorse.github.io/tjk-istatistik/
 
 Elle çalıştırmak için: GitHub'da **Actions → TJK verisini güncelle → Run workflow**.
 
@@ -24,12 +26,9 @@ Elle çalıştırmak için: GitHub'da **Actions → TJK verisini güncelle → R
 | `build_site.py` | `site/data.js` üreticisi |
 | `.github/workflows/guncelle.yml` | Günlük otomatik güncelleme |
 
-## Netlify ayarı
+## GitHub Pages ayarı (bir kez)
 
-Netlify'da **Add new site → Import an existing project → GitHub** ile bu depoyu seçin:
-
-- Build command: *(boş bırakın)*
-- Publish directory: `site`
+Settings → Pages → Build and deployment → **Source: GitHub Actions**.
 
 ## Bilgisayarda çalıştırmak
 

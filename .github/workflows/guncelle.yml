@@ -7,6 +7,8 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 concurrency:
   group: tjk-guncelle
@@ -16,6 +18,8 @@ jobs:
   guncelle:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    outputs:
+      degisti: ${{ steps.kaydet.outputs.degisti }}
     steps:
       - uses: actions/checkout@v5
 
@@ -33,6 +37,7 @@ jobs:
         run: python3 build_site.py veri site
 
       - name: Değişiklik varsa kaydet
+        id: kaydet
         run: |
           git config user.name "tjk-guncelleme"
           git config user.email "actions@users.noreply.github.com"
@@ -42,4 +47,24 @@ jobs:
           else
             git commit -m "Veri güncellendi: $(date -u +%Y-%m-%d)"
             git pull --rebase -q && git push
+            echo "degisti=1" >> "$GITHUB_OUTPUT"
           fi
+
+  # Siteyi GitHub Pages'te yayınla: veri değiştiyse ya da elle çalıştırıldıysa
+  yayinla:
+    needs: guncelle
+    if: needs.guncelle.outputs.degisti == '1' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.yayin.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: yayin
+        uses: actions/deploy-pages@v4
