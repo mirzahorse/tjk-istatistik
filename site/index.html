@@ -57,6 +57,16 @@ svg rect:hover{filter:brightness(1.2)}
 .chip.on{border-color:var(--yesil);color:var(--yesil);font-weight:600}
 footer{max-width:1180px;margin:0 auto;padding:0 20px 30px;color:var(--mut);font-size:12px}
 .hidden{display:none}
+.ms{position:relative;display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--mut)}
+.ms-btn{font:inherit;font-size:14px;color:var(--fg);background:var(--lacivert);border:1px solid var(--line);border-radius:4px;padding:6px 26px 6px 8px;min-width:110px;max-width:200px;text-align:left;cursor:pointer;position:relative;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ms-btn::after{content:"";position:absolute;right:9px;top:50%;width:6px;height:6px;border-right:2px solid var(--mut);border-bottom:2px solid var(--mut);transform:translateY(-70%) rotate(45deg)}
+.ms-btn.dolu{border-color:var(--yesil);color:var(--yesil);font-weight:600}
+.ms-pop{position:absolute;top:100%;left:0;margin-top:4px;z-index:20;background:var(--panel2);border:1px solid var(--line);border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.45);padding:6px;min-width:190px;max-height:320px;overflow-y:auto}
+.ms-pop label{display:flex;flex-direction:row;align-items:center;gap:8px;padding:5px 6px;border-radius:4px;font-size:14px;color:var(--fg);cursor:pointer;white-space:nowrap}
+.ms-pop label:hover{background:var(--lacivert)}
+.ms-pop input{accent-color:var(--yesil);width:15px;height:15px;margin:0}
+.ms-ust{display:flex;justify-content:space-between;gap:8px;padding:2px 4px 6px;border-bottom:1px solid var(--line);margin-bottom:4px}
+.ms-ust button{background:none;border:0;color:var(--yesil);font:inherit;font-size:12px;font-weight:600;cursor:pointer;padding:2px}
 </style>
 </head>
 <body>
@@ -77,13 +87,13 @@ footer{max-width:1180px;margin:0 auto;padding:0 20px 30px;color:var(--mut);font-
 <div class="filters" id="filtreler">
 <label>Başlangıç<input type="date" id="f_bas"></label>
 <label>Bitiş<input type="date" id="f_bit"></label>
-<label>Hipodrom<select id="f_hip"></select></label>
-<label>Pist<select id="f_pist"></select></label>
-<label>Irk<select id="f_irk"></select></label>
-<label>Mesafe<select id="f_mes"></select></label>
-<label>Koşu türü<select id="f_tur"></select></label>
-<label>Yaş<select id="f_yas"><option value="">Tümü</option><option value="2">2 yaşlı</option><option value="3">3 yaşlı</option><option value="4">4 yaşlı</option><option value="5">5 ve yukarı</option></select></label>
-<label>Cinsiyet<select id="f_cins"><option value="">Tümü</option><option>Erkek</option><option>Dişi</option></select></label>
+<div class="ms" data-k="hip" data-ad="Hipodrom"></div>
+<div class="ms" data-k="pist" data-ad="Pist"></div>
+<div class="ms" data-k="irk" data-ad="Irk"></div>
+<div class="ms" data-k="mes" data-ad="Mesafe"></div>
+<div class="ms" data-k="tur" data-ad="Koşu türü"></div>
+<div class="ms" data-k="yas" data-ad="Yaş"></div>
+<div class="ms" data-k="cins" data-ad="Cinsiyet"></div>
 <button class="btn" id="temizle">Temizle</button>
 </div>
 <div id="icerik"></div>
@@ -198,19 +208,56 @@ const kutu = (k, v, s = '') => `<div class="tile"><div class="k">${esc(k)}</div>
 const karCls = (r) => (r.kar > 0 ? 'pos' : r.kar < 0 ? 'neg' : '');
 
 // ---------- filtreler ----------
-const F = {bas: '', bit: '', hip: '', pist: '', irk: '', mes: '', tur: '', yas: '', cins: ''};
+const F = {bas: '', bit: '', hip: [], pist: [], irk: [], mes: [], tur: [], yas: [], cins: []};
 const $ = (id) => document.getElementById(id);
-function doldur(id, vals, ilk = 'Tümü') { $(id).innerHTML = `<option value="">${ilk}</option>` + vals.map((v) => `<option value="${esc(v)}">${esc(v)}</option>`).join(''); }
 const uniq = (f) => [...new Set(races.map(f))];
-doldur('f_hip', uniq((r) => r.hip).sort((a, b) => a.localeCompare(b, 'tr')));
-doldur('f_pist', ['Kum', 'Çim', 'Sentetik']);
-doldur('f_irk', ['İngiliz', 'Arap']);
-doldur('f_mes', uniq((r) => r.mes).sort((a, b) => a - b).map(String));
-doldur('f_tur', ['Maiden', 'Şartlı', 'Handikap', 'Kısa Vade Handikap', 'KV', 'Satış', 'Grup 1', 'Grup 2', 'Grup 3', 'Amatör'].filter((t) => uniq((r) => r.tur).includes(t)));
-for (const id of ['f_bas', 'f_bit']) { $(id).min = RAW.ilk; $(id).max = RAW.son; }
-const FID = {bas: 'f_bas', bit: 'f_bit', hip: 'f_hip', pist: 'f_pist', irk: 'f_irk', mes: 'f_mes', tur: 'f_tur', yas: 'f_yas', cins: 'f_cins'};
-for (const [k, id] of Object.entries(FID)) $(id).addEventListener('change', () => { const el = $(id); if (el.type === 'date' && el.value && !el.validity.valid) return; F[k] = el.value; ciz(); });
-$('temizle').addEventListener('click', () => { for (const [k, id] of Object.entries(FID)) { F[k] = ''; $(id).value = ''; } ciz(); });
+const SECENEK = {
+  hip: uniq((r) => r.hip).sort((a, b) => a.localeCompare(b, 'tr')).map((v) => [v, v]),
+  pist: ['Kum', 'Çim', 'Sentetik'].map((v) => [v, v]),
+  irk: ['İngiliz', 'Arap'].map((v) => [v, v]),
+  mes: uniq((r) => r.mes).sort((a, b) => a - b).map((v) => [String(v), nf.format(v) + ' m']),
+  tur: ['Maiden', 'Şartlı', 'Handikap', 'Kısa Vade Handikap', 'KV', 'Satış', 'Grup 1', 'Grup 2', 'Grup 3', 'Amatör'].filter((t) => uniq((r) => r.tur).includes(t)).map((v) => [v, v]),
+  yas: [['2', '2 yaşlı'], ['3', '3 yaşlı'], ['4', '4 yaşlı'], ['5', '5 ve yukarı']],
+  cins: [['Erkek', 'Erkek'], ['Dişi', 'Dişi']]
+};
+// çoklu seçim kutusu
+function msEtiket(el) {
+  const k = el.dataset.k, sec = F[k], b = el.querySelector('.ms-btn');
+  const ad = (v) => (SECENEK[k].find((o) => o[0] === v) || [v, v])[1];
+  b.textContent = !sec.length ? 'Tümü' : sec.length === 1 ? ad(sec[0]) : sec.length + ' seçili';
+  b.title = sec.map(ad).join(', ');
+  b.classList.toggle('dolu', sec.length > 0);
+}
+document.querySelectorAll('.ms').forEach((el) => {
+  const k = el.dataset.k;
+  el.innerHTML = `${esc(el.dataset.ad)}<button type="button" class="ms-btn" aria-haspopup="true" aria-expanded="false"></button>
+    <div class="ms-pop" hidden role="group" aria-label="${esc(el.dataset.ad)}"><div class="ms-ust"><button type="button" data-hepsi>Hepsini seç</button><button type="button" data-temiz>Temizle</button></div>
+    ${SECENEK[k].map(([v, t]) => `<label><input type="checkbox" value="${esc(v)}">${esc(t)}</label>`).join('')}</div>`;
+  const btn = el.querySelector('.ms-btn'), pop = el.querySelector('.ms-pop');
+  const uygula = () => { F[k] = [...pop.querySelectorAll('input:checked')].map((i) => i.value); msEtiket(el); ciz(); };
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const ac = pop.hidden;
+    document.querySelectorAll('.ms-pop').forEach((p) => { p.hidden = true; p.previousElementSibling.setAttribute('aria-expanded', 'false'); });
+    pop.hidden = !ac; btn.setAttribute('aria-expanded', String(ac));
+  });
+  pop.addEventListener('click', (e) => e.stopPropagation());
+  pop.addEventListener('change', uygula);
+  pop.querySelector('[data-hepsi]').addEventListener('click', () => { pop.querySelectorAll('input').forEach((i) => { i.checked = true; }); uygula(); });
+  pop.querySelector('[data-temiz]').addEventListener('click', () => { pop.querySelectorAll('input').forEach((i) => { i.checked = false; }); uygula(); });
+  msEtiket(el);
+});
+document.addEventListener('click', () => document.querySelectorAll('.ms-pop').forEach((p) => { p.hidden = true; p.previousElementSibling.setAttribute('aria-expanded', 'false'); }));
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') document.querySelectorAll('.ms-pop').forEach((p) => { p.hidden = true; }); });
+for (const id of ['f_bas', 'f_bit']) {
+  $(id).min = RAW.ilk; $(id).max = RAW.son;
+  $(id).addEventListener('change', () => { const el = $(id); if (el.value && !el.validity.valid) return; F[id === 'f_bas' ? 'bas' : 'bit'] = el.value; ciz(); });
+}
+$('temizle').addEventListener('click', () => {
+  F.bas = F.bit = ''; $('f_bas').value = $('f_bit').value = '';
+  document.querySelectorAll('.ms').forEach((el) => { F[el.dataset.k] = []; el.querySelectorAll('input').forEach((i) => { i.checked = false; }); msEtiket(el); });
+  ciz();
+});
 
 let cache = {key: '', list: rows};
 function suzulmus() {
@@ -218,9 +265,10 @@ function suzulmus() {
   if (cache.key === key) return cache.list;
   const list = rows.filter((r) => {
     const c = r.rc;
-    return (!F.bas || c.tarih >= F.bas) && (!F.bit || c.tarih <= F.bit) && (!F.hip || c.hip === F.hip) && (!F.pist || c.pist === F.pist) &&
-      (!F.irk || c.irk === F.irk) && (!F.mes || c.mes === +F.mes) && (!F.tur || c.tur === F.tur) &&
-      (!F.yas || (F.yas === '5' ? r.yas >= 5 : r.yas === +F.yas)) && (!F.cins || r.cins === F.cins);
+    const yok = (a) => !a.length;
+    return (!F.bas || c.tarih >= F.bas) && (!F.bit || c.tarih <= F.bit) && (yok(F.hip) || F.hip.includes(c.hip)) && (yok(F.pist) || F.pist.includes(c.pist)) &&
+      (yok(F.irk) || F.irk.includes(c.irk)) && (yok(F.mes) || F.mes.includes(String(c.mes))) && (yok(F.tur) || F.tur.includes(c.tur)) &&
+      (yok(F.yas) || F.yas.some((v) => (v === '5' ? r.yas >= 5 : r.yas === +v))) && (yok(F.cins) || F.cins.includes(r.cins));
   });
   cache = {key, list};
   return list;
@@ -430,7 +478,7 @@ function ciz() {
     $('s_olcut').addEventListener('change', (e) => { durum.olcut = e.target.value; ciz(); });
   }
   if (sekme === 'yetis') { aygirKarnesi(); kisrakKarnesi(); baglaArama('aygirAra', 'aygirAra', aygirKarnesi); baglaArama('kisrakAra', 'kisrakAra', kisrakKarnesi); }
-  const f = Object.values(F).filter(Boolean).length;
+  const f = Object.values(F).filter((v) => (Array.isArray(v) ? v.length : v)).length;
   $('ozetSatir').textContent = `${tarih(RAW.ilk)} – ${tarih(RAW.son)} · ${N(new Set(L.map((r) => r.rc.i)).size)} koşu · ${N(L.length)} start${f ? ' · ' + f + ' filtre açık' : ''}`;
 }
 function baglaArama(id, key, fn) {
