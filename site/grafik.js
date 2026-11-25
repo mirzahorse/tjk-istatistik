@@ -141,10 +141,10 @@
   }
 
   // ---------- pencere ----------
-  function ac(kart) {
+  function ac(kart, baslikVer, altVer) {
     const K = kaynaklar(kart); if (!K.length) return;
-    const baslik0 = kart.querySelector('h2')?.textContent.trim() || 'TJK istatistikleri';
-    const alt0 = document.getElementById('ozetSatir')?.textContent.trim() || '';
+    const baslik0 = baslikVer || kart.querySelector('h2')?.textContent.trim() || 'TJK istatistikleri';
+    const alt0 = altVer || document.getElementById('ozetSatir')?.textContent.trim() || '';
     const p = document.createElement('div'); p.className = 'pngp'; p.setAttribute('role', 'dialog'); p.setAttribute('aria-modal', 'true'); p.setAttribute('aria-label', 'Grafik olarak indir');
     p.innerHTML = `<div class="pngp-kutu">
       <div class="pngp-ust"><h2>Grafik olarak indir</h2><button type="button" class="pngp-kapat" aria-label="Kapat">✕</button></div>
@@ -221,5 +221,7 @@
   let bekle;
   new MutationObserver(() => { clearTimeout(bekle); bekle = setTimeout(dugmeEkle, 60); }).observe(document.getElementById('icerik'), {childList: true, subtree: true});
   dugmeEkle();
-  window.tjkGrafik = {ac, sayi};
+  // grafiğe çevrilebilecek bir tablo/grafik var mı? (sohbet asistanı kullanır)
+  const uygun = (el) => kaynaklar(el).some((k) => k.el.tagName !== 'TABLE' || tabloOku(k.el).sayisal.some(Boolean));
+  window.tjkGrafik = {ac, sayi, uygun};
 })();

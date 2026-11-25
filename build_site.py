@@ -18,6 +18,24 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from parse_tjk import parse_file  # aynı klasörde
 
 
+def apranti_oku():
+    """TJK 'Jokey olmaya kalan yarış sayısı' listesinin son kopyası (apranti.csv).
+    Site, bu tarihten sonraki apranti galibiyetlerini kalan sayıdan kendisi düşer."""
+    yol = os.path.join(os.path.dirname(os.path.abspath(__file__)), "apranti.csv")
+    if not os.path.exists(yol):
+        return None
+    tarih, liste = "", []
+    for ln in open(yol, encoding="utf-8").read().splitlines():
+        c = ln.split(";")
+        if ln.startswith("#") or not ln.strip() or c[0] == "ad":
+            continue
+        if c[0] == "tarih":
+            tarih = c[1]
+            continue
+        liste.append([c[0], c[1], c[2], int(c[3])] + [int(x) for x in c[4:9]])
+    return {"tarih": tarih, "liste": liste}
+
+
 def main():
     src = os.path.expanduser(sys.argv[1])
     out_dir = sys.argv[2] if len(sys.argv) > 2 else os.path.dirname(os.path.abspath(__file__))
@@ -99,7 +117,8 @@ def main():
 
     data = {"olusturma": rows[-1]["tarih"],
             "ilk": rows[0]["tarih"], "son": rows[-1]["tarih"],
-            "dict": {k: v["list"] for k, v in D.items()}, "races": races, "starts": S}
+            "dict": {k: v["list"] for k, v in D.items()}, "races": races, "starts": S,
+            "apranti": apranti_oku()}
     path = os.path.join(out_dir, "data.js")
     with open(path, "w", encoding="utf-8") as f:
         f.write("window.TJK_DATA=")

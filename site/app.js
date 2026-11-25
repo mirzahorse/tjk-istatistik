@@ -171,6 +171,33 @@ document.querySelectorAll('#sekmeler button').forEach((b) => b.addEventListener(
   sekme = b.dataset.tab; document.querySelectorAll('#sekmeler button').forEach((x) => x.classList.toggle('on', x === b)); ciz(); history.replaceState(null, '', '#' + sekme);
 }));
 
+// ---------- jokey olmaya kalan (apranti) ----------
+// TJK listesinin son kopyası + o tarihten sonraki apranti galibiyetleri (her saat güncellenen veriden)
+function apranti() {
+  const A = RAW.apranti; if (!A || !A.liste?.length) return '';
+  const son = new Map(), sonra = new Map(), yil = new Map();
+  for (const r of rows) {
+    const j = r.jokey;
+    if (!son.has(j) || son.get(j) < r.rc.tarih) son.set(j, r.rc.tarih);
+    if (r.w) yil.set(j, (yil.get(j) || 0) + 1);
+    if (r.w && r.ap && r.rc.tarih > A.tarih) sonra.set(j, (sonra.get(j) || 0) + 1);
+  }
+  const sinir = new Date(RAW.son + 'T12:00:00'); sinir.setDate(sinir.getDate() - 60);
+  const sinirS = sinir.toISOString().slice(0, 10);
+  let L = A.liste.map(([ad, kisa, kod, kalan, b1]) => {
+    const yeni = sonra.get(kisa) || 0;
+    return {ad, kisa, kod, kalan: Math.max(0, kalan - yeni), yeni, b1: b1 + yeni, yil: yil.get(kisa) || 0, son: son.get(kisa) || ''};
+  });
+  const hepsi = durum.aprHepsi;
+  if (!hepsi) L = L.filter((o) => o.son >= sinirS);
+  L.sort((a, b) => a.kalan - b.kalan || b.yil - a.yil);
+  const kalanCls = (o) => (o.kalan === 0 ? 'pos' : o.kalan <= 5 ? 'pos' : '');
+  return kart('Jokey olmaya kalan', `Aprantilerin jokey olmak için kazanması gereken yarış sayısı. TJK listesi ${tarih(A.tarih)} tarihli; o günden sonraki galibiyetler otomatik düşülüyor.`,
+    `<div class="ctl"><label class="pngp-kutucuk" style="flex-direction:row;align-items:center;gap:8px;font-size:13px;color:var(--mut)"><input type="checkbox" id="aprHepsi"${hepsi ? ' checked' : ''} style="accent-color:var(--yesil)"> Son 60 günde binmeyenleri de göster</label></div>` +
+    tablo([['Apranti', (o) => o.ad], ['Kısa ad', (o) => o.kisa], ['Sınıf', (o) => o.kod], ['Kalan', (o) => (o.kalan === 0 ? 'Jokey oldu' : o.kalan), 1, kalanCls],
+      ['Toplam 1.lik', (o) => o.b1, 1], ['2026 1.lik', (o) => o.yil, 1], [`${tarih(A.tarih).replace(/ \d{4}$/, '')} sonrası`, (o) => (o.yeni ? '+' + o.yeni : '—'), 1], ['Son biniş', (o) => (o.son ? tarih(o.son) : '—')]], L, {tall: 1, bos: 'Listede gösterilecek apranti yok.'}));
+}
+
 function genel(L) {
   const kos = new Set(L.map((r) => r.rc.i)), atW = new Map();
   for (const r of L) atW.set(r.k, (atW.get(r.k) || false) || r.w);
@@ -179,6 +206,7 @@ function genel(L) {
   let h = '<div class="tiles">' + kutu('Koşu', N(kos.size), N(new Set(L.map((r) => r.rc.tarih + r.rc.hip)).size) + ' yarış gününde') +
     kutu('Koşan at', N(atW.size), N(L.length) + ' start') + kutu('Hiç kazanamayan at', N(kazanamayan), P(pct(kazanamayan, atW.size)) + "'i") +
     kutu('Favori kazanma', P(pct(fav.filter((r) => r.w).length, fav.length)), 'En düşük ganyanlı at') + kutu('Dağıtılan 1.lik ikramiyesi', M(ikr)) + '</div>';
+  h += apranti();
   // aylık
   const ay = new Map(); for (const r of L) { const k = r.rc.tarih.slice(0, 7); if (!ay.has(k)) ay.set(k, new Set()); ay.get(k).add(r.rc.i); }
   const ayD = [...ay].sort().map(([k, s]) => ({k: AY[+k.slice(5) - 1], v: s.size}));
@@ -365,6 +393,7 @@ function ciz() {
   if (sekme === 'oyun') { el.innerHTML = '<div id="oyunAlan"></div>'; if (window.tjkOyun) window.tjkOyun.baslat(); }
   else if (sekme === 'tum') { el.innerHTML = '<div id="tumAlan"></div>'; if (window.tjkTum) window.tjkTum.baslat(); }
   else el.innerHTML = {genel, atlar, insan, yetis, kosul, sonuc}[sekme](L);
+  $('aprHepsi')?.addEventListener('change', (e) => { durum.aprHepsi = e.target.checked; ciz(); });
   if (sekme === 'atlar') { atKarnesi(); baglaArama('atAra', 'atAra', atKarnesi); }
   if (sekme === 'insan') {
     kisiKarnesi(); baglaArama('kisiAra', 'kisiAra', kisiKarnesi);

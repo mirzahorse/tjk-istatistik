@@ -142,7 +142,8 @@
     const ad = (o) => (tur === 'at' ? o.k.split('|')[0] : o.k);
     const ilk = g[0];
     const t = `${filtreYazi(f)} için ${olcut} sıralamasında ${TURAD[tur] || 'at'} listesinin başında ${ad(ilk)} var: ${ilk.start} startta ${ilk.bir} birincilik (%${nf1.format(ilk.yuzde)}).`;
-    return {t, h: tablo([['#', (o, i) => i + 1, 1], ['İsim', ad], ['1.lik', (o) => o.bir, 1], ['Start', (o) => o.start, 1], ['%', (o) => nf1.format(o.yuzde), 1], ['1 TL', (o) => (o.kar >= 0 ? '+' : '') + nf2.format(o.kar), 1, (o) => (o.kar > 0 ? 'pos' : o.kar < 0 ? 'neg' : '')]], g)};
+    const grup = TURAD[tur] || 'at';
+    return {t, gb: `${grup.charAt(0).toLocaleUpperCase('tr') + grup.slice(1)} · ${olcut} sıralaması`, ga: filtreYazi(f), h: tablo([['#', (o, i) => i + 1, 1], ['İsim', ad], ['1.lik', (o) => o.bir, 1], ['Start', (o) => o.start, 1], ['%', (o) => nf1.format(o.yuzde), 1], ['1 TL', (o) => (o.kar >= 0 ? '+' : '') + nf2.format(o.kar), 1, (o) => (o.kar > 0 ? 'pos' : o.kar < 0 ? 'neg' : '')]], g)};
   }
   function sonuclar(q, f) {
     if (!f.bas) { f.bas = f.bit = SON; }
@@ -313,6 +314,21 @@
       d.append(s);
     }
     ekle('bot-c', d);
+    // istatistik tablosu verdiysek grafiğe çevirmeyi teklif et
+    if (c.h && window.tjkGrafik?.uygun(d)) {
+      const t = document.createElement('div');
+      t.append(document.createTextNode('Bunu senin için görsel grafik haline getirebilirim, ister misin?'));
+      const s = document.createElement('div'); s.className = 'bot-sec';
+      const evet = document.createElement('button'); evet.type = 'button'; evet.textContent = 'Evet, grafik yap';
+      const hayir = document.createElement('button'); hayir.type = 'button'; hayir.textContent = 'Hayır, gerek yok';
+      // grafik başlığı: cevabın verdiği kısa başlık, yoksa cevabın ilk cümlesi (kısaltılmış)
+      let baslik = c.gb || c.t.split(/[:.](\s|$)/)[0].replace(/\s*\([^)]*\)\s*$/, '');
+      if (baslik.length > 70) baslik = baslik.slice(0, 68).replace(/\s+\S*$/, '') + '…';
+      evet.addEventListener('click', () => { s.remove(); window.tjkGrafik.ac(d, baslik, c.ga ? c.ga.charAt(0).toLocaleUpperCase('tr') + c.ga.slice(1) : ''); });
+      hayir.addEventListener('click', () => { s.remove(); });
+      s.append(evet, hayir); t.append(s);
+      ekle('bot-c', t);
+    }
   }
   function sor(soru, gorunen) {
     ekle('sen', document.createTextNode(gorunen || soru));
