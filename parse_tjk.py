@@ -31,6 +31,45 @@ def tur(sinif):
     return "Diğer"
 
 
+DUZELTME_DOSYASI = os.path.join(os.path.dirname(os.path.abspath(__file__)), "duzeltmeler.csv")
+_DUZ = None
+
+
+def duzeltmeler():
+    """TJK'nın yarıştan sonra yaptığı düzeltmeler (ör. diskalifiye).
+    Günlük CSV'ler bunları içermiyor; TJK istatistikleri içeriyor."""
+    global _DUZ
+    if _DUZ is None:
+        _DUZ = []
+        if os.path.exists(DUZELTME_DOSYASI):
+            for ln in open(DUZELTME_DOSYASI, encoding="utf-8").read().splitlines()[1:]:
+                c = [x.strip() for x in ln.split(";")]
+                if len(c) >= 5 and c[0]:
+                    _DUZ.append({"tarih": c[0], "hipodrom": c[1], "kosu_no": int(c[2]), "at": c[3], "islem": c[4]})
+    return _DUZ
+
+
+def duzelt(out, tarih, hip):
+    for d in duzeltmeler():
+        if d["tarih"] != tarih or d["hipodrom"] != hip:
+            continue
+        if d["islem"] == "iptal":  # koşu istatistiklerde hiç sayılmıyor
+            out[:] = [r for r in out if r["kosu_no"] != d["kosu_no"]]
+            continue
+        if d["islem"] != "diskalifiye":
+            continue
+        kosu = [r for r in out if r["kosu_no"] == d["kosu_no"]]
+        hedef = next((r for r in kosu if r["at"] == d["at"]), None)
+        if not hedef or hedef["durum"] == "Diskalifiye":
+            continue
+        eski = hedef["sira"]
+        for r in kosu:
+            if r is not hedef and r["durum"] == "Derece aldı" and r["sira"] > eski:
+                r["sira"] -= 1
+        hedef["durum"] = "Diskalifiye"
+        hedef["sira"] = len(kosu)
+
+
 def parse_file(path):
     ad = os.path.basename(path)[:-4]
     tarih, hip = ad.split("_", 1)
@@ -103,6 +142,7 @@ def parse_file(path):
             onceki["olu_yaris"] = True
         r.setdefault("olu_yaris", False)
         onceki = r
+    duzelt(out, tarih, hip)
     # koşudaki at sayısı
     n = {}
     for r in out:
