@@ -2,6 +2,7 @@
 *.zip
 .DS_Store
 __pycache__/
+site/anahtar.bin
 site/data.enc
 site/data.js
 site/kariyer/

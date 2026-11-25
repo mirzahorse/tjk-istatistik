@@ -1,8 +1,9 @@
 // Giriş: sitedeki bütün veri şifreli yayınlanır (data.enc, kariyer/*.enc).
-// Her kullanıcının şifresi, verinin anahtarını açan ayrı bir kilittir (kullanicilar.json).
+// Her yayının veri anahtarı sitenin özel anahtarıyla açılır (anahtar.bin, RSA-OAEP).
+// Özel anahtar, her kullanıcı için o kullanıcının şifresiyle ayrı kilitlenmiştir (kullanicilar.json).
 // Şifre hiçbir yere gönderilmez; çözme tamamen tarayıcıda yapılır.
 (() => {
-  const SAKLA = 'tjk_anahtar_v1';
+  const SAKLA = 'tjk_ozel_v2';
   const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
   const enc = new TextEncoder(), dec = new TextDecoder();
   const kucuk = (s) => String(s || '').trim().toLocaleLowerCase('tr');
@@ -30,7 +31,12 @@
       return new Uint8Array(ham);
     } catch (e) { return false; }
   }
-  const anahtarYap = (ham) => crypto.subtle.importKey('raw', ham, 'AES-GCM', false, ['decrypt']);
+  async function anahtarYap(ozelDer) {
+    const ozel = await crypto.subtle.importKey('pkcs8', ozelDer, {name: 'RSA-OAEP', hash: 'SHA-256'}, false, ['decrypt']);
+    const kilitli = await fetch('anahtar.bin', {cache: 'no-cache'}).then((r) => { if (!r.ok) throw new Error('anahtar.bin ' + r.status); return r.arrayBuffer(); });
+    const ham = await crypto.subtle.decrypt({name: 'RSA-OAEP'}, ozel, kilitli);
+    return crypto.subtle.importKey('raw', ham, 'AES-GCM', false, ['decrypt']);
+  }
 
   function yukle(src, modul) {
     return new Promise((ok, hata) => {
@@ -85,7 +91,7 @@
         const ham = await kilidiAc($g('kAd').value, $g('kSifre').value);
         if (!ham) { $g('kHata').textContent = 'Kullanıcı adı ya da şifre yanlış.'; $g('kSifre').select(); return; }
         anahtar = await anahtarYap(ham);
-        const sak = btoa(String.fromCharCode(...ham));
+        let sak = ''; for (const c of ham) sak += String.fromCharCode(c); sak = btoa(sak);
         try { ($g('kHatirla').checked ? localStorage : sessionStorage).setItem(SAKLA, sak); } catch (err) {}
         btn.textContent = 'Veri açılıyor…';
         await baslat();

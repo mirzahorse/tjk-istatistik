@@ -70,15 +70,13 @@ jobs:
         with:
           python-version: "3.12"
       - name: Siteyi oluştur ve şifrele
-        env:
-          YONETICI_SIFRE: ${{ secrets.YONETICI_SIFRE }}
         run: |
           pip install -q cryptography
           python3 build_site.py veri site
           python3 build_kariyer.py veri ozet site
           python3 sifrele.py site
           # şifresiz veri yayına gitmesin
-          test ! -e site/data.js && ! ls site/kariyer/*.json >/dev/null 2>&1
+          test -s site/data.enc && test -s site/anahtar.bin && test ! -e site/data.js && ! ls site/kariyer/*.json >/dev/null 2>&1
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

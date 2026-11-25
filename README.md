@@ -47,12 +47,12 @@ Sonra `site/index.html` dosyasını açın.
 
 ## Giriş ve şifreler
 
-Site kullanıcı adı + şifreyle açılır. Veri tarayıcıda çözülür; şifreler hiçbir yerde düz metin olarak tutulmaz.
+Site kullanıcı adı + şifreyle açılır. Veri tarayıcıda çözülür; şifreler hiçbir yerde düz metin olarak tutulmaz ve GitHub'da gizli ayar gerekmez.
 
-- Kullanıcılar: `site/kullanicilar.json` (her kullanıcı için ayrı kilit).
-- GitHub'da **Settings → Secrets and variables → Actions → `YONETICI_SIFRE`** = admin kullanıcısının şifresi. Yayın bu olmadan yapılmaz.
+- Her yayında veri rastgele yeni bir anahtarla şifrelenir; bu anahtar sitenin açık anahtarıyla kilitlenir (`site/anahtar.bin`).
+- Kilidi açan özel anahtar, her kullanıcı için kendi şifresiyle ayrı kilitlenmiştir (`site/kullanicilar.json`).
 - Kullanıcı eklemek / silmek:
   ```
-  YONETICI_SIFRE=... python3 kullanici.py ekle yeniad     # rastgele şifre üretir, bir kez gösterir
+  YONETICI_SIFRE=<admin şifresi> python3 kullanici.py ekle yeniad   # rastgele şifre üretir, bir kez gösterir
   python3 kullanici.py sil eskiad
   ```
