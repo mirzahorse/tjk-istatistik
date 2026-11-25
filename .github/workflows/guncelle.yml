@@ -40,7 +40,7 @@ jobs:
         run: |
           # her saat yalnızca bugün ve dün; günde bir kez (06:17) ve elle çalıştırınca son 7 gün
           if [ -n "${{ inputs.gun }}" ]; then GUN="${{ inputs.gun }}"; elif [ "$(date -u +%H)" = "03" ] || [ "${{ inputs.kaynak }}" = "elle" ]; then GUN=7; else GUN=2; fi
-          python3 tjk_indir.py --klasor veri --gun $GUN --program program
+          python3 tjk_indir.py --klasor veri --gun $GUN --program program --kayit kayit
 
 
       - name: Değişiklik varsa kaydet
@@ -48,7 +48,7 @@ jobs:
         run: |
           git config user.name "tjk-guncelleme"
           git config user.email "actions@users.noreply.github.com"
-          git add -A veri; if [ -d program ]; then git add -A program; fi
+          git add -A veri; for K in program kayit; do if [ -d $K ]; then git add -A $K; fi; done
           if git diff --cached --quiet; then
             echo "Yeni sonuç yok."
           else

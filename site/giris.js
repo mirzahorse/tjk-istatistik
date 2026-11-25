@@ -55,7 +55,7 @@
     document.documentElement.classList.remove('kilitli');
     $g('kapi')?.remove();
     await yukle('app.js');
-    for (const f of ['isim.js', 'bot.js', 'oyun.js', 'tum.js', 'grafik.js', 'akis.js', 'firebase-config.js']) yukle(f);
+    for (const f of ['isim.js', 'bot.js', 'tum.js', 'grafik.js', 'akis.js', 'oneri.js', 'firebase-config.js']) yukle(f);
     yukle('uye.js', true);
     cikisDugmesi();
   }

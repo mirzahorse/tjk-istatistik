@@ -34,13 +34,15 @@
       const sehirler = [...new Set(L.map((r) => BU(r.rc.hip)))];
       if (sehirler.length) O.push({kat: 'Dünün yarışları', konu: 'DÜNÜN YARIŞLARI', goruntu: 'DSF', aciklama: `(${sehirler.join(', ')}) YARIŞ ÖZETLERİ - SON 200 METRE`});
     }
-    const PRG = (RAW.program && RAW.program.length ? RAW.program : null);   // ileri tarihli program (varsa)
-    if (sablon === 'gunluk' && PRG) {
+    const PRG = RAW.program || [];   // ileri tarihli program (varsa)
+    if (sablon === 'gunluk' && (PRG || (RAW.kayit && RAW.kayit.length))) {
       const bugun = PRG.filter((p) => p.tarih === iso), sehirB = [...new Set(bugun.map((p) => BU(p.hip)))];
       if (sehirB.length) O.push({kat: 'Hava durumu', konu: 'HAVA DURUMU', goruntu: 'BROWSER', aciklama: `${sehirB.join(' - ')} HAVA DURUMU`});
-      for (const p of PRG.filter((p) => p.tarih > iso && /KV|G ?[123]|Kısa Vade/i.test(p.sinif))) {
-        O.push({kat: 'Deklare / kayıt', konu: 'DEKLARE', goruntu: 'BROWSER', aciklama: `${p.tarih.split('-').reverse().join('.')} ${BU(p.hip)} ${BU(p.sinif.split('/')[0])}`});
-      }
+      // deklare (yarıştan 2 gün önce) ve kayıt (6 gün önce): önemli koşular gün + şehir bazında
+      const ONEMLI = /^(KV|G ?[123]|A ?[123]|Grup)/i, gruplu = (liste) => { const m = new Map(); for (const p of liste.filter((p) => p.tarih > iso && ONEMLI.test(p.sinif))) { const k = p.tarih + '|' + p.hip; if (!m.has(k)) m.set(k, []); const c = BU(p.sinif.split('/')[0]); if (!m.get(k).includes(c)) m.get(k).push(c); } return m; };
+      const dek = gruplu(PRG), kay = gruplu(RAW.kayit || []);
+      for (const [k, c] of dek) { const [t, h] = k.split('|'); O.push({kat: 'Deklare', konu: 'DEKLARE', goruntu: 'DSF/KJ', aciklama: `${t.split('-').reverse().join('.')} ${BU(h)} ${c.join(', ')}`}); }
+      for (const [k, c] of kay) { if (dek.has(k)) continue; const [t, h] = k.split('|'); O.push({kat: 'Kayıt', konu: 'KAYIT', goruntu: 'BROWSER', aciklama: `${t.split('-').reverse().join('.')} ${BU(h)} ${c.join(', ')}`}); }
     }
     for (const [, a] of kos) {
       a.sort((x, y) => x.sira - y.sira);
@@ -125,7 +127,7 @@
           <h3>Öneriler <small>${D.sablon === 'gunluk' ? 'dünün yarışlarından' : 'son 7 günden'}</small></h3>
           ${O.length ? `<button type="button" class="btn ikincil" id="akHepsi">Hepsini ekle</button>` : ''}
           <ul>${O.map((o, i) => `<li class="${varMi.has(o.aciklama) ? 'eklendi' : ''}"><span class="kat">${e(o.kat)}</span><span>${e(o.aciklama)}</span>${o.sehir && o.sehir !== '-' ? `<small>${e(o.sehir)} · ${e(o.tarih)}${o.kosu && o.kosu !== '-' ? ' · ' + e(o.kosu) + '. koşu' : ''}</small>` : ''}<button type="button" data-oneri="${i}" ${varMi.has(o.aciklama) ? 'disabled' : ''}>${varMi.has(o.aciklama) ? 'Eklendi' : '+ Ekle'}</button></li>`).join('') || '<li class="akis-bos">Bu tarih için veriden öneri çıkmadı.</li>'}</ul>
-          ${!(RAW.program && RAW.program.length ? RAW.program : null) && D.sablon === 'gunluk' ? '<p class="d">Deklare, kayıt ve hava durumu satırlarını elle ekleyin.</p>' : ''}
+          
         </aside>
       </div></section>`;
     const $ = (id) => document.getElementById(id);
@@ -185,6 +187,12 @@
       } catch (err) { kariyer = new Map(); }
     }
   }
-  window.tjkAkis = {baslat, oneriler, akisHtml};
+  function ekle(satir) {
+    const t = new Date(); t.setMinutes(t.getMinutes() - t.getTimezoneOffset()); const iso = t.toISOString().slice(0, 10);
+    const d = depo(), k = 'gunluk|' + iso, kayit = d[k] || {sablon: 'gunluk', tarih: iso, baslik: SABLON.gunluk.baslik(iso), satirlar: []};
+    kayit.satirlar.push({konu: satir.konu || '', goruntu: satir.goruntu || '', aciklama: satir.aciklama || ''}); kayit.z = Date.now(); d[k] = kayit; depoYaz(d);
+    if (D.sablon === 'gunluk' && D.tarih === iso) D.satirlar = kayit.satirlar;
+  }
+  window.tjkAkis = {baslat, oneriler, akisHtml, ekle};
   if (document.getElementById('akisAlan')) baslat();
 })();

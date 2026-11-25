@@ -36,28 +36,44 @@ def apranti_oku():
     return {"tarih": tarih, "liste": liste}
 
 
-def program_oku():
-    """program/ klasöründeki ileri tarihli koşu başlıkları (tarih, hipodrom, koşu no, sınıf, saat, mesafe, pist)."""
+def program_oku(klasor="program"):
+    """program/ klasöründeki ileri tarihli koşular ve koşacak atlar (deklare edilmiş program)."""
     import glob
     import re
-    yol = os.path.join(os.path.dirname(os.path.abspath(__file__)), "program")
+    yol = os.path.join(os.path.dirname(os.path.abspath(__file__)), klasor)
     liste = []
     for f in sorted(glob.glob(os.path.join(yol, "*.csv"))):
         tarih, hip = os.path.basename(f)[:-4].split("_", 1)
+        ham = open(f, "rb").read()
         try:
-            metin = open(f, encoding="utf-8-sig").read()
+            metin = ham.decode("utf-8-sig")
         except UnicodeDecodeError:
-            metin = open(f, encoding="cp1254").read()
+            metin = ham.decode("cp1254")
+        kosu = None
         for ln in metin.splitlines():
-            c = ln.split(";")
+            c = [x.strip() for x in ln.split(";")]
             m = re.match(r"^\s*(\d+)\. Kosu :\s*(.*?)\s*(\d{1,2}[.:]\d{2})\s*$", c[0])
-            if not m:
+            if m:
+                mes = next((x[:-1] for x in c if re.fullmatch(r"\d{3,4}m", x)), "")
+                pist = next((x for x in c if x in ("Kum", "Çim", "Sentetik")), "")
+                grp = c[2] if len(c) > 2 else ""
+                kosu = {"tarih": tarih, "hip": hip, "no": int(m[1]), "ad": m[2].strip(), "saat": m[3].replace(":", "."),
+                        "sinif": c[1] if len(c) > 1 else "", "grup": grp, "mes": mes, "pist": pist, "atlar": []}
+                liste.append(kosu)
                 continue
-            p = [x.strip() for x in c]
-            mes = next((x[:-1] for x in p if re.fullmatch(r"\d{3,4}m", x)), "")
-            pist = next((x for x in p if x in ("Kum", "Çim", "Sentetik")), "")
-            liste.append({"tarih": tarih, "hip": hip, "no": int(m[1]), "ad": m[2].strip(), "saat": m[3].replace(":", "."),
-                          "sinif": p[1] if len(p) > 1 else "", "mes": mes, "pist": pist})
+            # at satırı: No;At;Yaş;Baba;Anne;Kilo;Jokey;Sahip;Antrenör;St;AGF;HP;Son 6;KGS;s20;En iyi derece
+            if kosu and len(c) >= 12 and c[0].isdigit() and re.match(r"^\d+y", c[2]):
+                if "Koşmaz" in ln:
+                    continue
+                toks = c[1].split()
+                while len(toks) > 1 and re.fullmatch(r"[A-ZÖÇŞİĞÜ]{1,4}", toks[-1]) and toks[-1] in {"KG", "K", "DB", "SK", "SKG", "GKR", "ÖG", "SGKR", "YP", "BB", "KUL", "GK"}:
+                    toks.pop()
+                jok = c[6]
+                agf = re.match(r"%([\d.]+)\((\d+)\)", c[10]) if len(c) > 10 else None
+                kosu["atlar"].append({"no": int(c[0]), "at": " ".join(toks), "baba": c[3], "jokey": jok[:-3].strip() if jok.endswith(" AP") else jok,
+                                      "ap": jok.endswith(" AP"), "antr": c[8], "agf": float(agf[1]) if agf else None, "agfs": int(agf[2]) if agf else None,
+                                      "hp": int(c[11]) if len(c) > 11 and c[11].isdigit() else None, "son6": c[12] if len(c) > 12 else "",
+                                      "kgs": int(c[13]) if len(c) > 13 and c[13].isdigit() else None})
     return liste
 
 
@@ -143,7 +159,7 @@ def main():
     data = {"olusturma": rows[-1]["tarih"],
             "ilk": rows[0]["tarih"], "son": rows[-1]["tarih"],
             "dict": {k: v["list"] for k, v in D.items()}, "races": races, "starts": S,
-            "apranti": apranti_oku(), "program": program_oku()}
+            "apranti": apranti_oku(), "program": program_oku(), "kayit": program_oku("kayit")}
     path = os.path.join(out_dir, "data.js")
     with open(path, "w", encoding="utf-8") as f:
         f.write("window.TJK_DATA=")
