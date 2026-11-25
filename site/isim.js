@@ -82,7 +82,7 @@
     if (tur === 'at') { at = at && atlar.includes(at) ? at : atlar[0]; L = L.filter((r) => r.k === at); }
     L = [...L].sort((a, b) => (a.rc.tarih < b.rc.tarih ? 1 : a.rc.tarih > b.rc.tarih ? -1 : 0));
     const kaz = L.filter((r) => r.w), i3 = L.filter((r) => r.i3);
-    let h = `<div class="karne-ust"><div><span class="karne-tur">${TUR[tur].ad}</span><h2>${esc(ad)}</h2></div><button type="button" class="karne-kapat" aria-label="Kapat">✕</button></div>`;
+    let h = `<div class="karne-ust"><div><span class="karne-tur">${TUR[tur].ad}</span><h2>${esc(ad)}</h2></div><div class="karne-dug"><button type="button" class="png-btn karne-png" title="Profil kartını PNG olarak indir">PNG</button><button type="button" class="karne-kapat" aria-label="Kapat">✕</button></div></div>`;
     if (atlar.length > 1) h += `<div class="chips">${atlar.map((k) => `<button class="chip${k === at ? ' on' : ''}" data-karne-at="${esc(k)}">${esc(k.split('|')[1])} – ${esc(k.split('|')[2])}</button>`).join('')}</div>`;
     if (tur === 'at' && L[0]) {
       const s = L[0];
@@ -113,6 +113,7 @@
     }
     panel.innerHTML = h; panel.scrollTop = 0;
     panel.querySelector('.karne-kapat').addEventListener('click', kapat);
+    panel.querySelector('.karne-png').addEventListener('click', () => window.tjkGrafik?.profil(profilVeri(ad, tur, L)));
     panel.querySelectorAll('[data-karne-at]').forEach((b) => b.addEventListener('click', () => ac(ad, 'at', b.dataset.karneAt)));
     panel.querySelectorAll('[data-karne-git]').forEach((b) => b.addEventListener('click', () => {
       const hedef = b.dataset.karneGit; kapat();
@@ -124,6 +125,42 @@
     tara(panel);
     panel.querySelector('.karne-kapat').focus();
   }
+
+  // ---------- profil kartı verisi ----------
+  const TABELA = 5;   // tabela: ilk 5'e giriş (ikramiye alan sıralar)
+  const tabelaMi = (r) => !r.derecesiz && r.sira >= 1 && r.sira <= TABELA;
+  function profilVeri(ad, tur, L) {
+    const kaz = L.filter((r) => r.w), tab = L.filter(tabelaMi), n = L.length;
+    const yz = (a) => (n ? 100 * a / n : 0), Y = (a) => '%' + new Intl.NumberFormat('tr-TR', {maximumFractionDigits: 1}).format(yz(a));
+    const enCok = (f, liste = kaz) => { const m = new Map(); for (const r of liste) m.set(f(r), (m.get(f(r)) || 0) + 1); return [...m].sort((a, b) => b[1] - a[1])[0]; };
+    const yil = String(RAW.son).slice(0, 4);
+    if (tur === 'at') {
+      const s = L[0] || {}, eski = [...L].reverse();
+      const derece = L.filter((r) => r.sn != null).sort((a, b) => a.sn / a.rc.mes - b.sn / b.rc.mes)[0];
+      const j = enCok((r) => r.jokey, L);
+      return {ad, rol: `${s.yas} yaşlı ${String(s.renk || '').toLowerCase()} ${String(s.cins || '').toLowerCase()} · ${s.baba} – ${s.anne}`,
+        istat: [{k: 'Koşu', metin: N(n)}, {k: 'Birincilik', metin: N(kaz.length), vurgu: 1}, {k: 'Tabela', metin: N(tab.length)}, {k: 'İkramiye', metin: M(sum(kaz, (r) => r.rc.ikr))}],
+        halka: [{k: 'Kazanma', yuzde: yz(kaz.length)}, {k: 'Tabela', yuzde: yz(tab.length)}],
+        form: eski.slice(-10).map((r) => ({s: r.derecesiz ? '–' : String(r.sira), t: tarih(r.rc.tarih).replace(/ \d{4}$/, '')})),
+        notlar: [['Antrenör', s.antr || '—'], ['En çok binen jokey', j ? `${j[0]} · ${j[1]} koşu` : '—'], ['En iyi derecesi', derece ? `${derece_(derece)} · ${N(derece.rc.mes)} m ${derece.rc.pist} · ${derece.rc.hip}` : '—']].slice(0, 3),
+        dipnot: `${yil} sezonu · Tabela: ilk ${TABELA}`};
+    }
+    const atAd = {jokey: 'Bindiği at', antr: 'Çalıştırdığı at', sahip: 'Koşan atı', baba: 'Koşan tayı', anne: 'Koşan yavrusu'}[tur];
+    const kazAd = tur === 'jokey' ? 'Kazandığı yarış' : 'Birincilik';
+    const ayl = AY.slice(0, +String(RAW.son).slice(5, 7)).map((k, i) => ({k, v: kaz.filter((r) => +r.rc.tarih.slice(5, 7) === i + 1).length}));
+    const hip = grupla(L, (r) => r.rc.hip).filter((o) => o.start >= 15).sort((a, b) => b.yuzde - a.yuzde)[0];
+    const notlar = [];
+    if (hip) notlar.push(['En güçlü olduğu hipodrom', `${hip.k} · %${new Intl.NumberFormat('tr-TR', {maximumFractionDigits: 1}).format(hip.yuzde)} kazanma`]);
+    const at = enCok((r) => r.at);
+    if (at) notlar.push([tur === 'baba' || tur === 'anne' ? 'En çok kazanan yavrusu' : 'En çok kazandığı at', `${at[0]} · ${at[1]} birincilik`]);
+    if (tur === 'jokey' || tur === 'antr') { const o = enCok((r) => (tur === 'jokey' ? r.antr : r.jokey)); if (o) notlar.push([tur === 'jokey' ? 'En çok birlikte kazandığı antrenör' : 'En çok kazandığı jokey', `${o[0]} · ${o[1]}`]); }
+    return {ad, rol: `${TUR[tur].ad} · ${yil} sezonu`,
+      istat: [{k: atAd, metin: N(new Set(L.map((r) => r.k)).size)}, {k: kazAd, metin: N(kaz.length), vurgu: 1}, {k: 'Koşu', metin: N(n)}, {k: 'İkramiye', metin: M(sum(kaz, (r) => r.rc.ikr))}],
+      halka: [{k: 'Kazanma yüzdesi', yuzde: yz(kaz.length)}, {k: 'Tabela yüzdesi', yuzde: yz(tab.length)}],
+      seri: {baslik: 'Aylara göre birincilik', veri: ayl}, notlar: notlar.slice(0, 3),
+      dipnot: `Tabela: ilk ${TABELA}`, aciklama: `Tabela yüzdesi: koşularının ilk ${TABELA} içinde bittiği oran.`};
+  }
+  const derece_ = (r) => derece(r.sn);
 
   // tıklama ve klavye
   document.addEventListener('click', (e) => {
