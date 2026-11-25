@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TJK 2026 İstatistikleri</title>
+<title>Editör Paneli · TJK 2026</title>
 <link rel="icon" href="favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -25,7 +25,7 @@ h1,h2,nav button,.tile .v,.pist-ad,.pist-sayi{font-family:"Space Grotesk",Inter,
 header{max-width:1180px;margin:0 auto;padding:30px 20px 34px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:28px 48px;align-items:end}
 .kimlik{display:flex;flex-direction:column;gap:18px}
 header img{width:56px;height:56px;border-radius:12px;background:var(--yesil);padding:6px}
-h1{font-size:clamp(34px,5.2vw,58px);line-height:.98;margin:0;font-weight:700;letter-spacing:-.035em}
+h1{font-size:clamp(34px,5vw,56px);line-height:.98;margin:0;font-weight:700;letter-spacing:-.035em}
 h1 span{display:block;color:var(--mut);font-weight:500;font-size:.42em;letter-spacing:-.01em;margin-top:10px}
 .sub{color:var(--mut);font-size:14px;margin:0;font-variant-numeric:tabular-nums}
 .pist{position:relative;padding:4px 0 0}
@@ -63,7 +63,8 @@ select:hover,input:hover{border-color:#2A3D60}
 select:focus,input:focus{outline:2px solid var(--yesil);outline-offset:-1px}
 .btn{font:inherit;font-size:13px;font-weight:600;background:var(--fg);color:var(--lacivert);border:0;border-radius:8px;padding:8px 14px;cursor:pointer}
 .btn:hover{background:#fff}
-#temizle{background:transparent;color:var(--mut);border:1px solid var(--line)}#temizle:hover{color:var(--fg)}
+#temizle,#dahaFiltre{background:transparent;color:var(--mut);border:1px solid var(--line)}#temizle:hover,#dahaFiltre:hover{color:var(--fg)}#temizle[hidden]{display:none}
+.filtre-ek{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:end;width:100%}.filtre-ek[hidden]{display:none}
 .tum-kat{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 16px}.tum-kat .btn{background:transparent;color:var(--mut);border:1px solid var(--line);border-radius:20px}.tum-kat .btn.on{background:var(--fg);color:var(--lacivert);border-color:var(--fg)}
 .tum-f{margin:0 0 18px;padding:0;border:0;background:none}
 tr.sec td{background:var(--panel2)}.tik a{color:inherit;text-decoration:none;border-bottom:1px dotted var(--mut)}.tik a:hover{color:var(--yesil);border-color:var(--yesil)}.tile .v{overflow-wrap:anywhere}
@@ -162,18 +163,18 @@ html.kilitli .navwrap,html.kilitli main,html.kilitli footer,html.kilitli #pist{d
 <body>
 <div class="ust"><header>
 <div class="kimlik"><img src="logo.png" alt="YRŞ TYZ">
-<div><h1>TJK 2026<span>Türkiye yarışlarının bütün sonuçları, tek sayfada</span></h1>
+<div><h1>Editör Paneli</h1>
 <p class="sub" id="ozetSatir" style="margin-top:12px">Yükleniyor…</p></div></div>
 <section class="pist" id="pist" aria-label="Sezonun önündekiler"></section>
 </header></div>
 <div class="navwrap"><nav id="sekmeler">
-<button data-tab="genel" class="on">Genel</button>
+<button data-tab="genel" class="on">Özet</button>
+<button data-tab="sonuc">Sonuçlar</button>
 <button data-tab="atlar">Atlar</button>
 <button data-tab="jokey">Jokeyler</button>
 <button data-tab="antr">Antrenörler</button>
-<button data-tab="yetis">Yetiştiricilik</button>
-<button data-tab="kosul">Koşu koşulları</button>
-<button data-tab="sonuc">Sonuçlar</button>
+<button data-tab="yetis">Aygırlar</button>
+<button data-tab="kosul">Analiz</button>
 <button data-tab="tum">Tüm zamanlar</button>
 <button data-tab="oyun">O mu, bu mu?</button>
 </nav></div>
@@ -184,11 +185,14 @@ html.kilitli .navwrap,html.kilitli main,html.kilitli footer,html.kilitli #pist{d
 <div class="ms" data-k="hip" data-ad="Hipodrom"></div>
 <div class="ms" data-k="pist" data-ad="Pist"></div>
 <div class="ms" data-k="irk" data-ad="Irk"></div>
+<button type="button" class="btn" id="dahaFiltre" aria-expanded="false">Daha fazla filtre</button>
+<button class="btn" id="temizle" hidden>Filtreleri temizle</button>
+<div class="filtre-ek" id="filtreEk" hidden>
 <div class="ms" data-k="mes" data-ad="Mesafe"></div>
 <div class="ms" data-k="tur" data-ad="Koşu türü"></div>
 <div class="ms" data-k="yas" data-ad="Yaş"></div>
 <div class="ms" data-k="cins" data-ad="Cinsiyet"></div>
-<button class="btn" id="temizle">Temizle</button>
+</div>
 </div>
 <div id="icerik"></div>
 </main>

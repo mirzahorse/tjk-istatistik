@@ -64,14 +64,12 @@
     if (S.bas == null || S.bas < yMin) S.bas = yMin;
     if (S.bit == null || S.bit > yMax) S.bit = yMax;
     const L = hesapla(D);
-    const topK = yillar.filter((y) => y >= S.bas && y <= S.bit).reduce((t, y) => t + D.yillar[y].kosu, 0);
-    const topS = yillar.filter((y) => y >= S.bas && y <= S.bit).reduce((t, y) => t + D.yillar[y].start, 0);
     const ySec = (id, v) => `<select id="${id}">${yillar.map((y) => `<option${y === v ? ' selected' : ''}>${y}</option>`).join('')}</select>`;
     const sec = S.sec && L.find((o) => o.ad === S.sec);
     const enIyi = L[0];
     alan.innerHTML = `
       <section class="card"><h2>Tüm zamanlar</h2>
-        <p class="d">TJK'nın resmi sonuç dosyası yayımladığı ${yMin}–${yMax} yılları. Seçili aralıkta ${nf.format(topK)} koşu, ${nf.format(topS)} start. ${D.guncel} verisi her saat güncellenir.</p>
+        <p class="d">${yMin}–${yMax} yılları. Bir isme tıklayınca yıl yıl dökümü açılır.</p>
         <div class="tum-kat">${KAT.map(([k, a]) => `<button type="button" class="btn${k === S.kat ? ' on' : ''}" data-kat="${k}">${a}</button>`).join('')}</div>
         <div class="filters tum-f">
           <label>Ara<input id="tumAra" type="search" placeholder="İsim yazın" value="${e(S.ara)}"></label>
@@ -81,7 +79,6 @@
           ${S.sira === 'yuzde' || S.sira === 'tabela' ? `<label>En az koşu<input id="tumMin" type="number" min="1" value="${S.min ?? MIN_VARS[S.kat]}" style="width:6em"></label>` : ''}
         </div>
         ${enIyi && !S.ara ? `<div class="tiles">${[
-          ['Kayıt', nf.format(L.length)],
           ['Zirvede', adGoster(S.kat, enIyi.ad).replace(/ \(.*/, '')],
           [S.sira === 'kosu' ? 'Koşu' : S.sira === 'yuzde' ? 'Kazanma %' : S.sira === 'tabela' ? 'İlk üç %' : S.sira === 'iki' ? 'İkincilik' : 'Birincilik',
             S.sira === 'yuzde' ? '%' + nf1.format(enIyi.yuzde) : S.sira === 'tabela' ? '%' + nf1.format(enIyi.tabela) : nf.format(S.sira === 'kosu' ? enIyi.t[0] : S.sira === 'iki' ? enIyi.t[2] : enIyi.t[1])]

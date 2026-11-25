@@ -143,6 +143,10 @@ for (const id of ['f_bas', 'f_bit']) {
   $(id).min = RAW.ilk; $(id).max = RAW.son;
   $(id).addEventListener('change', () => { const el = $(id); if (el.value && !el.validity.valid) return; F[id === 'f_bas' ? 'bas' : 'bit'] = el.value; ciz(); });
 }
+$('dahaFiltre').addEventListener('click', () => {
+  const ac = $('filtreEk').hidden; $('filtreEk').hidden = !ac;
+  $('dahaFiltre').setAttribute('aria-expanded', String(ac)); $('dahaFiltre').textContent = ac ? 'Daha az filtre' : 'Daha fazla filtre';
+});
 $('temizle').addEventListener('click', () => {
   F.bas = F.bit = ''; $('f_bas').value = $('f_bit').value = '';
   document.querySelectorAll('.ms').forEach((el) => { F[el.dataset.k] = []; el.querySelectorAll('input').forEach((i) => { i.checked = false; }); msEtiket(el); });
@@ -192,48 +196,31 @@ function apranti() {
   if (!hepsi) L = L.filter((o) => o.son >= sinirS);
   L.sort((a, b) => a.kalan - b.kalan || b.yil - a.yil);
   const kalanCls = (o) => (o.kalan === 0 ? 'pos' : o.kalan <= 5 ? 'pos' : '');
-  return kart('Jokey olmaya kalan', `Aprantilerin jokey olmak için kazanması gereken yarış sayısı. TJK listesi ${tarih(A.tarih)} tarihli; o günden sonraki galibiyetler otomatik düşülüyor.`,
+  return kart('Jokey olmaya kalan', 'Aprantilerin jokey olmak için kazanması gereken yarış sayısı. Her yeni galibiyette kendiliğinden azalır.',
     `<div class="ctl"><label class="pngp-kutucuk" style="flex-direction:row;align-items:center;gap:8px;font-size:13px;color:var(--mut)"><input type="checkbox" id="aprHepsi"${hepsi ? ' checked' : ''} style="accent-color:var(--yesil)"> Son 60 günde binmeyenleri de göster</label></div>` +
     tablo([['Apranti', (o) => o.ad], ['Kısa ad', (o) => o.kisa], ['Sınıf', (o) => o.kod], ['Kalan', (o) => (o.kalan === 0 ? 'Jokey oldu' : o.kalan), 1, kalanCls],
-      ['Toplam 1.lik', (o) => o.b1, 1], ['2026 1.lik', (o) => o.yil, 1], [`${tarih(A.tarih).replace(/ \d{4}$/, '')} sonrası`, (o) => (o.yeni ? '+' + o.yeni : '—'), 1], ['Son biniş', (o) => (o.son ? tarih(o.son) : '—')]], L, {tall: 1, bos: 'Listede gösterilecek apranti yok.'}));
+      ['Toplam 1.lik', (o) => o.b1, 1], ['2026 1.lik', (o) => o.yil, 1], ['Son biniş', (o) => (o.son ? tarih(o.son) : '—')]], L, {tall: 1, bos: 'Listede gösterilecek apranti yok.'}));
 }
 
 function genel(L) {
-  const kos = new Set(L.map((r) => r.rc.i)), atW = new Map();
+  const atW = new Map();
   for (const r of L) atW.set(r.k, (atW.get(r.k) || false) || r.w);
-  const kazanamayan = [...atW.values()].filter((v) => !v).length;
   const fav = L.filter((r) => r.fav), ikr = sum(L.filter((r) => r.w), (r) => r.rc.ikr);
-  let h = '<div class="tiles">' + kutu('Koşu', N(kos.size), N(new Set(L.map((r) => r.rc.tarih + r.rc.hip)).size) + ' yarış gününde') +
-    kutu('Koşan at', N(atW.size), N(L.length) + ' start') + kutu('Hiç kazanamayan at', N(kazanamayan), P(pct(kazanamayan, atW.size)) + "'i") +
-    kutu('Favori kazanma', P(pct(fav.filter((r) => r.w).length, fav.length)), 'En düşük ganyanlı at') + kutu('Dağıtılan 1.lik ikramiyesi', M(ikr)) + '</div>';
+  let h = '<div class="tiles">' + kutu('Koşu', N(new Set(L.map((r) => r.rc.i)).size)) + kutu('Koşan at', N(atW.size)) +
+    kutu('Favori kazanma', P(pct(fav.filter((r) => r.w).length, fav.length))) + kutu('Dağıtılan 1.lik ikramiyesi', M(ikr)) + '</div>';
   h += apranti();
-  // aylık
   const ay = new Map(); for (const r of L) { const k = r.rc.tarih.slice(0, 7); if (!ay.has(k)) ay.set(k, new Set()); ay.get(k).add(r.rc.i); }
   const ayD = [...ay].sort().map(([k, s]) => ({k: AY[+k.slice(5) - 1], v: s.size}));
   const hp = new Map(); for (const r of L) { if (!hp.has(r.rc.hip)) hp.set(r.rc.hip, new Set()); hp.get(r.rc.hip).add(r.rc.i); }
   const hpD = [...hp].map(([k, s]) => ({k, v: s.size})).sort((a, b) => b.v - a.v);
   h += '<div class="grid">' + kart('Aylara göre koşu sayısı', '', cubuk(ayD, {aria: 'Aylık koşu sayısı'})) + kart('Hipodromlara göre koşu sayısı', '', yatay(hpD, {aria: 'Hipodrom bazında koşu sayısı'})) + '</div>';
-  // kazanamayan dağılımı
-  const cnt = new Map(), won = new Set(); for (const r of L) { cnt.set(r.k, (cnt.get(r.k) || 0) + 1); if (r.w) won.add(r.k); }
-  const b = new Array(10).fill(0); for (const [k, c] of cnt) if (!won.has(k)) b[Math.min(c, 10) - 1]++;
-  // kazanma farkı
-  const kazananlar = L.filter((r) => r.w);
-  const FB = [['Burun–Baş', /^(Burun|Kısa Baş|Baş|At Başı)$/], ['Boyun', /^Boyun$/], ['Yarım–1 boy', /^(Yarım Boy|1 Boy)$/], ['1,5–3 boy', /^(1,5|2|2,5|3) Boy$/], ['3,5–5 boy', /^(3,5|4|4,5|5) Boy$/], ['5+ boy', /^\d+(,5)? Boy$/]];
-  const fb = FB.map(([k]) => ({k, v: 0}));
-  for (const r of kazananlar) { const i = FB.findIndex(([, re]) => re.test(r.fark)); if (i >= 0) fb[i].v++; }
-  h += '<div class="grid">' + kart('Hiç kazanamayan atlar kaç kez koştu?', 'Bu yıl hiç birinci olamayan atların koşu sayısına göre dağılımı.', cubuk(b.map((v, i) => ({k: i === 9 ? '10+' : String(i + 1), v})), {aria: 'Kazanamayan atların koşu sayısı'})) +
-    kart('Koşular ne kadar farkla bitiyor?', 'Birincinin ikinciye attığı fark.', cubuk(fb.map((d) => ({...d, alt: P(pct(d.v, kazananlar.length))})), {aria: 'Kazanma farkı dağılımı'})) + '</div>';
-  // kalabalık koşular
-  const KB = [['≤6', 0, 6], ['7–9', 7, 9], ['10–12', 10, 12], ['13–15', 13, 15], ['16+', 16, 99]];
-  const kb = KB.map(([k, a, z]) => { const f = fav.filter((r) => r.rc.n >= a && r.rc.n <= z); return {k, v: pct(f.filter((r) => r.w).length, f.length), alt: N(f.length) + ' koşu'}; });
-  const surpriz = kazananlar.filter((r) => r.g > 0).sort((a, b) => b.g - a.g).slice(0, 10);
-  h += '<div class="grid">' + kart('Kalabalık koşularda favori', 'Koşan at sayısı arttıkça favorinin kazanma oranı.', cubuk(kb, {fmt: P, aria: 'Koşan at sayısına göre favori kazanma oranı'})) +
-    kart('En büyük sürprizler', 'En yüksek ganyanla kazanan atlar.', tablo([['Tarih', (r) => tarih(r.rc.tarih)], ['Hipodrom', (r) => r.rc.hip], ['At', (r) => r.at], ['Ganyan', (r) => nf2.format(r.g), 1], ['Koşan', (r) => r.rc.n, 1]], surpriz)) + '</div>';
+  const surpriz = L.filter((r) => r.w && r.g > 0).sort((a, b) => b.g - a.g).slice(0, 10);
+  h += kart('En büyük sürprizler', 'En yüksek ganyanla kazanan atlar.', tablo([['Tarih', (r) => tarih(r.rc.tarih)], ['Hipodrom', (r) => r.rc.hip], ['At', (r) => r.at], ['Jokey', (r) => r.jokey], ['Ganyan', (r) => nf2.format(r.g), 1]], surpriz));
   return h;
 }
 
 function atlar(L) {
-  let h = kart('At ara', 'Bir atın 2026 karnesini görmek için adını yazın (filtrelerden bağımsız, yılın tamamı).', `<div class="ctl"><label>At adı<input id="atAra" placeholder="ör. MR ÇIRAK" value="${esc(durum.atAra)}"></label></div><div id="atSonuc"></div>`);
+  let h = kart('At ara', 'Adını yazın; atın bu yılki bütün koşuları çıksın.', `<div class="ctl"><label>At adı<input id="atAra" placeholder="ör. MR ÇIRAK" value="${esc(durum.atAra)}"></label></div><div id="atSonuc"></div>`);
   // en çok kazanan
   const g = grupla(L, (r) => r.k);
   const ad = (o) => o.k.split('|')[0], baba = (o) => o.k.split('|')[1];
@@ -287,30 +274,28 @@ function siralama(L, alan, olcut, id, baslik, kimAd) {
   let g = grupla(L, alan);
   if (olcut === 'yuzde') g = g.filter((o) => o.start >= 30).sort((a, b) => b.yuzde - a.yuzde);
   else if (olcut === 'ikr') g.sort((a, b) => b.ikr - a.ikr);
-  else if (olcut === 'kar') g = g.filter((o) => o.oyn >= 50).sort((a, b) => b.kar - a.kar);
-  else if (olcut === 'zarar') g = g.filter((o) => o.oyn >= 50).sort((a, b) => a.kar - b.kar);
   else g.sort((a, b) => b.bir - a.bir || a.start - b.start);
-  const sec = `<select id="${id}">${[['bir', 'Birincilik sayısı'], ['yuzde', 'Kazanma % (30+ start)'], ['ikr', 'İkramiye'], ['kar', 'En kârlı'], ['zarar', 'En zararlı']].map(([v, t]) => `<option value="${v}"${v === olcut ? ' selected' : ''}>${t}</option>`).join('')}</select>`;
-  return kart(baslik, 'Kâr/zarar: her starta 1 TL ganyan oynansaydı ne kadar kazanılır ya da kaybedilirdi (en az 50 start).',
+  const sec = `<select id="${id}">${[['bir', 'Birincilik sayısı'], ['yuzde', 'Kazanma yüzdesi'], ['ikr', 'İkramiye']].map(([v, t]) => `<option value="${v}"${v === olcut ? ' selected' : ''}>${t}</option>`).join('')}</select>`;
+  return kart(baslik, olcut === 'yuzde' ? 'En az 30 kez koşanlar arasında.' : '',
     `<div class="ctl"><label>Sırala${sec}</label></div>` +
-    tablo([['#', (o, i) => i + 1, 1], [kimAd, (o) => o.k], ['1.lik', (o) => o.bir, 1], ['İlk 3', (o) => o.i3, 1], ['Start', (o) => o.start, 1], ['Kazanma', (o) => P(o.yuzde), 1], ['İkramiye', (o) => M(o.ikr), 1], ['1 TL kâr/zarar', (o) => (o.kar >= 0 ? '+' : '') + nf2.format(o.kar) + ' TL', 1, karCls]], g.slice(0, 20)));
+    tablo([['#', (o, i) => i + 1, 1], [kimAd, (o) => o.k], ['1.lik', (o) => o.bir, 1], ['İlk 3', (o) => o.i3, 1], ['Start', (o) => o.start, 1], ['Kazanma', (o) => P(o.yuzde), 1], ['İkramiye', (o) => M(o.ikr), 1]], g.slice(0, 20)));
 }
 function jokeyler(L) {
   let h = siralama(L, (r) => r.jokey, durum.olcutJ, 's_olcutJ', 'Jokey sıralaması', 'Jokey');
   const ik = grupla(L, (r) => r.jokey + ' + ' + r.antr).filter((o) => o.bir >= 3).sort((a, b) => b.bir - a.bir || b.yuzde - a.yuzde).slice(0, 15);
   const ap = oranlar(L, (r) => (r.ap ? 'Apranti' : 'Profesyonel'), ['Profesyonel', 'Apranti']);
-  h += '<div class="grid">' + kart('Jokey–antrenör ikilileri', 'En çok birlikte kazananlar.', tablo([['İkili', (o) => o.k], ['1.lik', (o) => o.bir, 1], ['Start', (o) => o.start, 1], ['Kazanma', (o) => P(o.yuzde), 1]], ik)) +
-    kart('Apranti etkisi', 'Apranti (çırak) jokeylerle profesyonellerin kazanma oranı.', cubuk(ap.map((o) => ({k: o.k, v: o.yuzde, alt: N(o.start) + ' start'})), {fmt: P, aria: 'Apranti ve profesyonel kazanma oranı'})) + '</div>';
-  h += kart('Jokey karnesi: hangi hipodromda daha güçlü?', 'Jokey adının bir kısmını yazın (ör. ÇİÇEK).', `<div class="ctl"><label>Jokey<input id="kisiAra" value="${esc(durum.kisiAra)}" placeholder="ör. M.ÇİÇEK"></label></div><div id="kisiSonuc"></div>`);
+  h += '<div class="grid">' + kart('En çok birlikte kazanan jokey ve antrenörler', '', tablo([['İkili', (o) => o.k], ['1.lik', (o) => o.bir, 1], ['Start', (o) => o.start, 1], ['Kazanma', (o) => P(o.yuzde), 1]], ik)) +
+    kart('Apranti ve profesyonel jokeyler', 'Kazanma yüzdesi.', cubuk(ap.map((o) => ({k: o.k, v: o.yuzde})), {fmt: P, aria: 'Apranti ve profesyonel kazanma oranı'})) + '</div>';
+  h += kart('Jokey ara', 'Adını yazın; hipodromlara göre sonuçları çıksın.', `<div class="ctl"><label>Jokey<input id="kisiAra" value="${esc(durum.kisiAra)}" placeholder="ör. M.ÇİÇEK"></label></div><div id="kisiSonuc"></div>`);
   return h;
 }
 function antrenorler(L) {
   let h = siralama(L, (r) => r.antr, durum.olcutA, 's_olcutA', 'Antrenör sıralaması', 'Antrenör');
   const ik = grupla(L, (r) => r.antr + ' + ' + r.jokey).filter((o) => o.bir >= 3).sort((a, b) => b.bir - a.bir || b.yuzde - a.yuzde).slice(0, 15);
   const sh = grupla(L, (r) => r.sahip).sort((a, b) => b.bir - a.bir || a.start - b.start).slice(0, 15);
-  h += '<div class="grid">' + kart('Antrenörün en çok kazandığı jokeyler', 'Antrenör + jokey ikilileri, en çok birlikte kazananlar.', tablo([['İkili', (o) => o.k], ['1.lik', (o) => o.bir, 1], ['Start', (o) => o.start, 1], ['Kazanma', (o) => P(o.yuzde), 1]], ik)) +
+  h += '<div class="grid">' + kart('En çok birlikte kazanan antrenör ve jokeyler', '', tablo([['İkili', (o) => o.k], ['1.lik', (o) => o.bir, 1], ['Start', (o) => o.start, 1], ['Kazanma', (o) => P(o.yuzde), 1]], ik)) +
     kart('Sahip sıralaması', 'En çok birincilik alan at sahipleri.', tablo([['#', (o, i) => i + 1, 1], ['Sahip', (o) => o.k], ['1.lik', (o) => o.bir, 1], ['Start', (o) => o.start, 1], ['İkramiye', (o) => M(o.ikr), 1]], sh)) + '</div>';
-  h += kart('Antrenör karnesi: hangi hipodromda daha güçlü?', 'Antrenör adının bir kısmını yazın (ör. ÖZGÜL).', `<div class="ctl"><label>Antrenör<input id="kisiAra" value="${esc(durum.kisiAra)}" placeholder="ör. M.ÖZGÜL"></label></div><div id="kisiSonuc"></div>`);
+  h += kart('Antrenör ara', 'Adını yazın; hipodromlara göre sonuçları çıksın.', `<div class="ctl"><label>Antrenör<input id="kisiAra" value="${esc(durum.kisiAra)}" placeholder="ör. M.ÖZGÜL"></label></div><div id="kisiSonuc"></div>`);
   return h;
 }
 function kisiKarnesi() {
@@ -319,7 +304,7 @@ function kisiKarnesi() {
   const jokey = sekme === 'jokey', alan = jokey ? (r) => r.jokey : (r) => r.antr;
   const L = suzulmus().filter((r) => alan(r).includes(q));
   const adlar = [...new Set(L.map(alan))];
-  const kol = [['Hipodrom', (o) => o.k], ['Start', (o) => o.start, 1], ['1.lik', (o) => o.bir, 1], ['Kazanma', (o) => P(o.yuzde), 1], ['1 TL kâr/zarar', (o) => (o.kar >= 0 ? '+' : '') + nf2.format(o.kar), 1, karCls]];
+  const kol = [['Hipodrom', (o) => o.k], ['Start', (o) => o.start, 1], ['1.lik', (o) => o.bir, 1], ['Kazanma', (o) => P(o.yuzde), 1]];
   el.innerHTML = (adlar.length > 1 ? `<p class="d">${adlar.length} isim eşleşti: ${esc(adlar.slice(0, 8).join(', '))}${adlar.length > 8 ? '…' : ''}. Daha uzun yazarak daraltabilirsiniz.</p>` : '') +
     tablo(kol, grupla(L, (r) => r.rc.hip).sort((a, b) => b.start - a.start), {bos: jokey ? 'Bu isimde jokey yok.' : 'Bu isimde antrenör yok.'});
 }
@@ -327,12 +312,9 @@ function kisiKarnesi() {
 function yetis(L) {
   const g = grupla(L, (r) => r.baba).sort((a, b) => b.bir - a.bir).slice(0, 20);
   const iki = new Map(); for (const r of L) if (r.yas === 2 && r.w) iki.set(r.baba, (iki.get(r.baba) || 0) + 1);
-  let h = kart('Aygır sıralaması', 'Babalarına göre tayların başarısı.', tablo([['#', (o, i) => i + 1, 1], ['Aygır', (o) => o.k], ['Koşan tay', (o) => o.atlar.size, 1], ['Kazanan tay', (o) => o.kazAt.size, 1], ['1.lik', (o) => o.bir, 1], ['Start', (o) => o.start, 1], ['Kazanma', (o) => P(o.yuzde), 1], ['İkramiye', (o) => M(o.ikr), 1], ['2 yaşlı 1.lik', (o) => iki.get(o.k) || 0, 1]], g));
-  h += '<div class="grid">' + kart('Aygır karnesi', 'Bir aygırın taylarının pist ve mesafeye göre başarısı.', `<div class="ctl"><label>Aygır (baba)<input id="aygirAra" value="${esc(durum.aygirAra)}" placeholder="ör. APPROVE"></label></div><div id="aygirSonuc"></div>`) +
-    kart('Kısrak ve yarım kardeşler', 'Aynı anneden gelen atlar.', `<div class="ctl"><label>Kısrak (anne)<input id="kisrakAra" value="${esc(durum.kisrakAra)}" placeholder="ör. COPY CAT"></label></div><div id="kisrakSonuc"></div>`) + '</div>';
-  const renk = oranlar(L, (r) => r.renk, ['Doru', 'Al', 'Kır']), cins = oranlar(L, (r) => r.cins, ['Erkek', 'Dişi']);
-  h += '<div class="grid">' + kart('Renge göre kazanma', 'Merak için: renk ile başarı arasında bilinen bir bağ yok.', cubuk(renk.map((o) => ({k: o.k, v: o.yuzde, alt: N(o.start) + ' start'})), {fmt: P, aria: 'Renge göre kazanma'})) +
-    kart('Cinsiyete göre kazanma', 'Dişiler kendi aralarında da koşar; karma koşularda ayrıca bakın.', cubuk(cins.map((o) => ({k: o.k, v: o.yuzde, alt: N(o.start) + ' start'})), {fmt: P, aria: 'Cinsiyete göre kazanma'})) + '</div>';
+  let h = kart('Aygır sıralaması', 'Tayların toplam başarısına göre.', tablo([['#', (o, i) => i + 1, 1], ['Aygır', (o) => o.k], ['Kazanan tay', (o) => o.kazAt.size, 1], ['1.lik', (o) => o.bir, 1], ['Start', (o) => o.start, 1], ['Kazanma', (o) => P(o.yuzde), 1], ['İkramiye', (o) => M(o.ikr), 1]], g));
+  h += '<div class="grid">' + kart('Aygır ara', 'Taylarının pist ve mesafeye göre başarısı.', `<div class="ctl"><label>Aygır (baba)<input id="aygirAra" value="${esc(durum.aygirAra)}" placeholder="ör. APPROVE"></label></div><div id="aygirSonuc"></div>`) +
+    kart('Kısrak ara', 'Aynı anneden gelen atlar.', `<div class="ctl"><label>Kısrak (anne)<input id="kisrakAra" value="${esc(durum.kisrakAra)}" placeholder="ör. COPY CAT"></label></div><div id="kisrakSonuc"></div>`) + '</div>';
   return h;
 }
 function aygirKarnesi() {
@@ -356,7 +338,7 @@ function kisrakKarnesi() {
 }
 
 function kosul(L) {
-  const bar = (list) => list.map((o) => ({k: o.k, v: o.yuzde, alt: N(o.start) + ' start'}));
+  const bar = (list) => list.map((o) => ({k: o.k, v: o.yuzde}));
   const GB = [['1–2', 0, 2], ['2–3', 2, 3], ['3–5', 3, 5], ['5–10', 5, 10], ['10–20', 10, 20], ['20+', 20, 1e9]];
   const gan = oranlar(L, (r) => (r.g > 0 ? (GB.find(([, a, z]) => r.g >= a && r.g < z) || [])[0] : null), GB.map((b) => b[0]));
   const agf = oranlar(L, (r) => (r.agf ? (r.agf >= 8 ? '8+' : String(r.agf)) : null), ['1', '2', '3', '4', '5', '6', '7', '8+']);
@@ -380,15 +362,21 @@ function kosul(L) {
   for (const r of L) { if (r.sn == null) continue; const k = r.rc.hip + '|' + r.rc.pist + '|' + r.rc.mes; const o = m.get(k); if (!o || r.sn < o.sn) m.set(k, {r, sn: r.sn, n: 0}); }
   const rs = (s) => { const p = String(s || '').split('.'); return p.length === 3 ? +p[0] * 60 + +p[1] + +p[2] / 100 : null; };
   const der = [...m.values()].sort((a, b) => a.r.rc.hip.localeCompare(b.r.rc.hip, 'tr') || a.r.rc.pist.localeCompare(b.r.rc.pist, 'tr') || a.r.rc.mes - b.r.rc.mes);
-  let h = '<div class="grid">' + kart('Ganyana göre kazanma', 'Ganyan aralığındaki atların kaçta kaçı birinci geldi.', cubuk(bar(gan), {fmt: P, aria: 'Ganyana göre kazanma'})) +
-    kart('AGF sırasına göre kazanma', 'AGF: ganyan oynanışına göre atın sırası.', cubuk(bar(agf), {fmt: P, aria: 'AGF sırasına göre kazanma'})) + '</div>';
-  h += '<div class="grid">' + kart('Start numarasına göre kazanma', 'Mesafe ve pist filtresiyle birlikte bakınca daha anlamlı.', cubuk(st.map((o) => ({k: o.k, v: o.yuzde})), {fmt: (v) => nf1.format(v), aria: 'Start numarasına göre kazanma yüzdesi'})) +
-    kart('Dış start', 'Dış starttan çıkan atların kazanma oranı.', cubuk(bar(ds), {fmt: P, aria: 'Dış start kazanma'})) + '</div>';
-  h += '<div class="grid">' + kart('Taşınan kiloya göre kazanma', 'Handikapta iyi atlara daha çok kilo verildiği için ağır kilolu atlar daha sık kazanır.',cubuk(bar(kilo), {fmt: P, aria: 'Kiloya göre kazanma'})) + kart('Fazla kilo', 'Jokey kilosu nedeniyle fazla kilo taşıyan atlar.', cubuk(bar(fz), {fmt: P, aria: 'Fazla kilo etkisi'})) + '</div>';
-  h += '<div class="grid">' + kart('Dinlenme süresi', 'Önceki koşusundan bu yana geçen gün (yıl içi).', cubuk(bar(ara), {fmt: P, aria: 'Dinlenme süresine göre kazanma'})) +
-    kart('Saat ve gün', '', cubuk(bar(saat).concat(bar(gun).map((d) => ({...d, ikinci: 1}))), {fmt: P, aria: 'Saat ve güne göre kazanma'})) + '</div>';
-  h += kart('Ekipman etkisi', 'Ekipmanlı atların kazanma oranı, ekipmansızlarla ve ekipmanın ilk takıldığı koşuyla karşılaştırması.', tablo([['Ekipman', (o) => o.c + (o.ad !== o.c ? ' · ' + o.ad : '')], ['Start', (o) => N(o.n), 1], ['Takılıyken', (o) => P(o.var), 1], ['Takılmamışken', (o) => P(o.yok), 1], ['İlk takıldığında', (o) => (o.ilkN ? P(o.ilk) + ' (' + N(o.ilkN) + ')' : '—'), 1]], ek));
-  h += kart('En iyi dereceler', 'Her hipodrom, pist ve mesafe için en iyi derece; yeşil olanlar pist rekoruna eşit ya da daha iyi.', tablo([['Hipodrom', (o) => o.r.rc.hip], ['Pist', (o) => o.r.rc.pist], ['Mesafe', (o) => N(o.r.rc.mes), 1], ['En iyi derece', (o) => derece(o.sn), 0, (o) => (rs(o.r.rc.rekor) != null && o.sn <= rs(o.r.rc.rekor) + 0.001 ? 'pos' : '')], ['At', (o) => o.r.at], ['Tarih', (o) => tarih(o.r.rc.tarih)], ['Pist rekoru', (o) => o.r.rc.rekor || '—']], der, {tall: 1}));
+  let h = '<div class="grid">' + kart('Ganyana göre kazanma', 'Bu ganyan aralığındaki atların yüzde kaçı kazandı.', cubuk(bar(gan), {fmt: P, aria: 'Ganyana göre kazanma'})) +
+    kart('AGF sırasına göre kazanma', 'AGF: oynanma sırası. 1 = en çok oynanan at.', cubuk(bar(agf), {fmt: P, aria: 'AGF sırasına göre kazanma'})) + '</div>';
+  h += '<div class="grid">' + kart('Start numarasına göre kazanma', 'Yüzde. Mesafe ve pist filtresiyle bakınca daha anlamlı.', cubuk(st.map((o) => ({k: o.k, v: o.yuzde})), {fmt: (v) => nf1.format(v), aria: 'Start numarasına göre kazanma yüzdesi'})) + + '</div>';
+  h += kart('Taşınan kiloya göre kazanma', 'Handikapta iyi atlar daha çok kilo taşır; bu yüzden ağır kilolular daha sık kazanır.', cubuk(bar(kilo), {fmt: P, aria: 'Kiloya göre kazanma'}));
+  h += '<div class="grid">' + kart('Dinlenme süresine göre kazanma', 'Önceki koşusundan bu yana geçen gün.', cubuk(bar(ara), {fmt: P, aria: 'Dinlenme süresine göre kazanma'})) +
+    kart('Saat ve gün', 'Gündüz ve akşam, hafta içi ve hafta sonu kazanma yüzdesi.', cubuk(bar(saat).concat(bar(gun).map((d) => ({...d, ikinci: 1}))), {fmt: P, aria: 'Saat ve güne göre kazanma'})) + '</div>';
+  const kaz = L.filter((r) => r.w), fav = L.filter((r) => r.fav);
+  const FB = [['Burun–Baş', /^(Burun|Kısa Baş|Baş|At Başı)$/], ['Boyun', /^Boyun$/], ['Yarım–1 boy', /^(Yarım Boy|1 Boy)$/], ['1,5–3 boy', /^(1,5|2|2,5|3) Boy$/], ['3,5–5 boy', /^(3,5|4|4,5|5) Boy$/], ['5+ boy', /^\d+(,5)? Boy$/]];
+  const fb = FB.map(([k]) => ({k, v: 0})); for (const r of kaz) { const i = FB.findIndex(([, re]) => re.test(r.fark)); if (i >= 0) fb[i].v++; }
+  const KBF = [['≤6 at', 0, 6], ['7–9 at', 7, 9], ['10–12 at', 10, 12], ['13–15 at', 13, 15], ['16+ at', 16, 99]];
+  const kb = KBF.map(([k, a, z]) => { const f = fav.filter((r) => r.rc.n >= a && r.rc.n <= z); return {k, v: pct(f.filter((r) => r.w).length, f.length)}; });
+  h += '<div class="grid">' + kart('Koşular ne farkla bitiyor?', 'Birincinin ikinciye attığı fark, koşu sayısı.', cubuk(fb, {aria: 'Kazanma farkı'})) +
+    kart('Kalabalık koşularda favori', 'Koşan at sayısına göre favorinin kazanma yüzdesi.', cubuk(kb, {fmt: P, aria: 'Koşan at sayısına göre favori'})) + '</div>';
+  h += kart('Ekipman etkisi', 'Kazanma yüzdesi: ekipman takılıyken, takılı değilken ve ilk takıldığı koşuda.', tablo([['Ekipman', (o) => o.c + (o.ad !== o.c ? ' · ' + o.ad : '')], ['Start', (o) => N(o.n), 1], ['Takılıyken', (o) => P(o.var), 1], ['Takılmamışken', (o) => P(o.yok), 1], ['İlk takıldığında', (o) => (o.ilkN ? P(o.ilk) + ' (' + N(o.ilkN) + ')' : '—'), 1]], ek));
+  h += kart('En iyi dereceler', 'Her hipodrom, pist ve mesafede yılın en iyisi. Yeşil olanlar pist rekoru seviyesinde.', tablo([['Hipodrom', (o) => o.r.rc.hip], ['Pist', (o) => o.r.rc.pist], ['Mesafe', (o) => N(o.r.rc.mes), 1], ['En iyi derece', (o) => derece(o.sn), 0, (o) => (rs(o.r.rc.rekor) != null && o.sn <= rs(o.r.rc.rekor) + 0.001 ? 'pos' : '')], ['At', (o) => o.r.at], ['Tarih', (o) => tarih(o.r.rc.tarih)], ['Pist rekoru', (o) => o.r.rc.rekor || '—']], der, {tall: 1}));
   return h;
 }
 
@@ -415,7 +403,8 @@ function ciz() {
   }
   if (sekme === 'yetis') { aygirKarnesi(); kisrakKarnesi(); baglaArama('aygirAra', 'aygirAra', aygirKarnesi); baglaArama('kisrakAra', 'kisrakAra', kisrakKarnesi); }
   const f = Object.values(F).filter((v) => (Array.isArray(v) ? v.length : v)).length;
-  $('ozetSatir').textContent = `${tarih(RAW.ilk)} – ${tarih(RAW.son)} · ${N(new Set(L.map((r) => r.rc.i)).size)} koşu · ${N(L.length)} start${f ? ' · ' + f + ' filtre açık' : ''}`;
+  $('temizle').hidden = !f;
+  $('ozetSatir').textContent = `TJK 2026 · ${tarih(RAW.son)} tarihine kadar${f ? ' · ' + f + ' filtre açık' : ''}`;
 }
 function baglaArama(id, key, fn) {
   const el = $(id); if (!el) return; let t;
@@ -433,13 +422,13 @@ function pist() {
   const azalt = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   $('pist').innerHTML = `<div class="pist-bas"><span><b>Sezonun önündekiler</b> · birincilik sayısı</span><div class="pist-sec" role="group" aria-label="Sıralama">${Object.entries(PIST).map(([k, v]) => `<button type="button" data-p="${k}" class="${k === pistSec ? 'on' : ''}" aria-pressed="${k === pistSec}">${v[0]}</button>`).join('')}</div></div>
     <div class="kulvarlar">${ilk.map(([k, v], i) => `<div class="kulvar"><span class="no">${i + 1}</span><div class="serit"><div class="at" data-w="${(100 * v / max).toFixed(1)}" style="width:${pistIlk && !azalt ? '0' : (100 * v / max).toFixed(1)}%"><span class="pist-ad">${esc(adi.get(k) || k)}</span></div></div><span class="pist-sayi">${N(v)}</span></div>`).join('')}<div class="direk" aria-hidden="true"></div></div>
-    <p class="pist-not">${tarih(RAW.ilk)} – ${tarih(RAW.son)} arası tüm koşular. Kırmızı-beyaz direk bitiş çizgisi.</p>`;
+`;
   $('pist').querySelector('.kulvarlar').style.position = 'relative';
   $('pist').querySelectorAll('[data-p]').forEach((b) => b.addEventListener('click', () => { pistSec = b.dataset.p; pistIlk = false; pist(); }));
   if (pistIlk && !azalt) requestAnimationFrame(() => requestAnimationFrame(() => $('pist').querySelectorAll('.at').forEach((a) => { a.style.width = a.dataset.w + '%'; })));
   pistIlk = false;
 }
 pist();
-$('dipnot').textContent = `Kaynak: TJK resmi günlük sonuç dosyaları (medya-cdn.tjk.org). Koşmayan atlar hariç. İkramiye yalnızca birincilik ikramiyesidir. Atlar ad + baba + anne ile ayırt edilir. Son yarış günü: ${tarih(RAW.son)}. Bu sayfa bağımsızdır, TJK ile bağlantısı yoktur.`;
+$('dipnot').textContent = `Kaynak: TJK resmi sonuçları. Son yarış günü: ${tarih(RAW.son)}. İkramiye yalnızca birincilik ikramiyesidir.`;
 let h0 = location.hash.slice(1); if (h0 === 'insan') h0 = 'jokey'; if (['genel', 'atlar', 'jokey', 'antr', 'yetis', 'kosul', 'sonuc', 'tum', 'oyun'].includes(h0)) { sekme = h0; document.querySelectorAll('#sekmeler button').forEach((x) => x.classList.toggle('on', x.dataset.tab === h0)); }
 ciz();
