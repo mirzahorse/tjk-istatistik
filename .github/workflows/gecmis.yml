@@ -1,0 +1,94 @@
+name: Geçmiş yılları özetle (tüm zamanlar)
+
+# Elle çalıştırılır. TJK'da hangi yılların sonuç dosyası olduğunu bulur, her yılı indirip
+# kariyer özetine (ozet/YYYY.json) çevirir. Ham CSV'ler depoya konmaz.
+on:
+  workflow_dispatch:
+    inputs:
+      yillar:
+        description: "Yıl aralığı (ör. 2000-2025)"
+        default: "2000-2025"
+        required: false
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: tjk-gecmis
+  cancel-in-progress: false
+
+jobs:
+  kesif:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    outputs:
+      yillar: ${{ steps.bul.outputs.yillar }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with: { python-version: "3.12" }
+      - id: bul
+        run: |
+          BAS=${{ inputs.yillar }}; BAS=${BAS:-2000-2025}; A=${BAS%-*}; B=${BAS#*-}
+          LISTE=""
+          for Y in $(seq $A $B); do
+            if [ -f ozet/$Y.json ]; then echo "$Y: özet zaten var"; continue; fi
+            if python3 tjk_indir.py --yil $Y --ornek --klasor /tmp/kesif > /tmp/k.log 2>&1; then
+              echo "$Y: VAR"; LISTE="$LISTE,$Y"
+            else
+              echo "$Y: yok ($(tail -1 /tmp/k.log))"
+            fi
+          done
+          echo "--- örnek dosya başlıkları ---"
+          for f in $(ls /tmp/kesif/*.csv 2>/dev/null | awk -F/ '{print $NF}' | cut -c1-4 | sort -u); do
+            g=$(ls /tmp/kesif/$f-*.csv | head -1); echo "== $g"; head -12 "$g" | cut -c1-160
+          done
+          echo "yillar=[${LISTE#,}]" >> "$GITHUB_OUTPUT"
+          echo "Bulunan yıllar: [${LISTE#,}]"
+
+  yil:
+    needs: kesif
+    if: needs.kesif.outputs.yillar != '[]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 2          # TJK sunucusunu yormamak için aynı anda en fazla 2 yıl
+      matrix:
+        yil: ${{ fromJSON(needs.kesif.outputs.yillar) }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with: { python-version: "3.12" }
+      - run: python3 tjk_indir.py --yil ${{ matrix.yil }} --klasor /tmp/yil
+      - run: python3 ozet_yil.py /tmp/yil ${{ matrix.yil }} --cikti ozet
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ozet-${{ matrix.yil }}
+          path: ozet/${{ matrix.yil }}.json
+          if-no-files-found: ignore
+
+  birlestir:
+    needs: yil
+    if: always() && needs.yil.result != 'skipped'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: ozet-*
+          path: ozet
+          merge-multiple: true
+      - run: |
+          ls -la ozet
+          git config user.name "tjk-guncelleme"
+          git config user.email "actions@users.noreply.github.com"
+          git add ozet
+          if git diff --cached --quiet; then echo "Yeni özet yok"; exit 0; fi
+          git commit -m "Geçmiş yıl özetleri eklendi"
+          git pull --rebase -q && git push
+      - name: Siteyi yeniden oluştur ve yayınla
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run guncelle.yml -R ${{ github.repository }} --ref main -f kaynak=elle

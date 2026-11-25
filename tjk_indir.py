@@ -68,6 +68,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--klasor", default="veri")
     ap.add_argument("--gun", type=int, default=0, help="yalnızca son N günü dene (0 = yılın tamamı)")
+    ap.add_argument("--yil", type=int, default=0, help="geçmiş bir yılın tamamını indir (ör. 2015)")
+    ap.add_argument("--ornek", action="store_true", help="--yil ile: yalnızca birkaç günü dene (yıl var mı keşfi)")
     a = ap.parse_args()
     os.makedirs(a.klasor, exist_ok=True)
 
@@ -80,18 +82,23 @@ def main():
     print("TJK bağlantı testi: tamam", flush=True)
 
     bugun = dt.datetime.now(ZoneInfo("Europe/Istanbul")).date()
-    bitis = bugun
-    baslangic = max(YIL_BASI, bitis - dt.timedelta(days=a.gun - 1)) if a.gun else YIL_BASI
+    if a.yil:
+        baslangic, bitis = dt.date(a.yil, 1, 1), min(dt.date(a.yil, 12, 31), bugun)
+    else:
+        bitis = bugun
+        baslangic = max(YIL_BASI, bitis - dt.timedelta(days=a.gun - 1)) if a.gun else YIL_BASI
     isler = []
     gun = baslangic
     while gun <= bitis:
-        isler += [(gun, s) for s in HIPODROMLAR]
+        # keşif: ocak, nisan, temmuz, ekim aylarının ilk 3 günü
+        if not a.ornek or (gun.month in (1, 4, 7, 10) and gun.day <= 3):
+            isler += [(gun, s) for s in HIPODROMLAR]
         gun += dt.timedelta(days=1)
     print(f"{baslangic} – {bitis}: {len(isler)} dosya denenecek", flush=True)
 
     sayac = {"indi": 0, "var": 0, "yok": 0, "hata": 0}
     with ThreadPoolExecutor(ESZAMANLI) as ex:
-        for (g, s), sonuc in zip(isler, ex.map(lambda x: indir(a.klasor, *x, zorla=(bugun - x[0]).days <= 1), isler)):
+        for (g, s), sonuc in zip(isler, ex.map(lambda x: indir(a.klasor, *x, zorla=(bugun - x[0]).days <= 1 and not a.yil), isler)):
             sayac[sonuc] += 1
             if sonuc == "hata":
                 print(f"  ağ hatası: {g} {s}", flush=True)
@@ -99,6 +106,8 @@ def main():
     # hiç dosya inemediyse ve hepsi hata verdiyse iş akışı başarısız görünsün
     if sayac["hata"] and not (sayac["indi"] or sayac["var"]):
         sys.exit(1)
+    if a.ornek:
+        sys.exit(0 if sayac["indi"] or sayac["var"] else 3)   # 3 = bu yıl için dosya yok
 
 
 if __name__ == "__main__":
