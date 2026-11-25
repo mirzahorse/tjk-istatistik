@@ -93,6 +93,16 @@ def parse_file(path):
                         "hp": int(f[11]) if f[11].strip().isdigit() else None,
                         "derece": der.replace(":", ".", 1) if der else "", "derece_sn": sure(der),
                         "ganyan": num(f[13]), "fark": re.sub(r"\s+", " ", f[14].strip())})
+    # ölü yarış: fark sütununda "At Başı" yazan atla bir alttaki at aynı sırayı paylaşır
+    # (TJK resmi istatistikleri de ikisini aynı sırada sayar)
+    onceki = None
+    for r in out:
+        if onceki and onceki["kosu_no"] == r["kosu_no"] and onceki["fark"] == "At Başı" and r["durum"] == "Derece aldı":
+            r["sira"] = onceki["sira"]
+            r["olu_yaris"] = True
+            onceki["olu_yaris"] = True
+        r.setdefault("olu_yaris", False)
+        onceki = r
     # koşudaki at sayısı
     n = {}
     for r in out:

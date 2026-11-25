@@ -15,6 +15,11 @@ Site adresi: https://mirzahorse.github.io/tjk-istatistik/
 
 Elle çalıştırmak için: GitHub'da **Actions → TJK verisini güncelle → Run workflow**.
 
+## Veri notları
+
+- Ölü yarışta (fark sütununda "At Başı") iki at aynı sırayı paylaşır; TJK istatistikleri de böyle sayar.
+- 18 Nisan 2026 Ankara günü TJK'nın sunucusunda yok; `arsivden_tamamla.py` ile bağımsız arşivden eklendi (AGF, HP, start ve ikramiye bilgisi yok). TJK dosyayı yayımlarsa indirici resmi dosyayı otomatik olarak koyar.
+
 ## Klasörler
 
 | Yol | İçerik |
@@ -24,6 +29,7 @@ Elle çalıştırmak için: GitHub'da **Actions → TJK verisini güncelle → R
 | `tjk_indir.py` | CSV indirici |
 | `parse_tjk.py` | CSV okuyucu |
 | `build_site.py` | `site/data.js` üreticisi |
+| `arsivden_tamamla.py` | TJK'nın resmi dosyasını yayımlamadığı bir günü bağımsız arşivden tamamlar (şu an yalnızca 18 Nisan 2026 Ankara) |
 | `.github/workflows/guncelle.yml` | Günlük otomatik güncelleme |
 
 ## GitHub Pages ayarı (bir kez)

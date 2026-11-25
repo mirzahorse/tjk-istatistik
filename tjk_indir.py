@@ -35,6 +35,8 @@ def url(gun, sehir):
 def indir(klasor, gun, sehir, zorla=False):
     """zorla=True: dosya varsa bile yeniden indirir (gün içinde tamamlanan sonuçlar için)."""
     hedef = os.path.join(klasor, f"{gun:%Y-%m-%d}_{sehir}.csv")
+    if os.path.exists(hedef) and "Arşivden" in open(hedef, encoding="utf-8-sig").readline():
+        zorla = True   # arşivden tamamlanmış gün: TJK resmi dosyayı yayımladıysa onunla değiştir
     if not zorla and os.path.exists(hedef) and os.path.getsize(hedef) > 200:
         return "var"
     gecici = hedef + ".part"
