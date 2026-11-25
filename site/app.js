@@ -293,8 +293,37 @@ function siralama(L, alan, olcut, id, baslik, kimAd) {
     `<div class="ctl"><label>Sırala${sec}</label></div>` +
     tablo([['#', (o, i) => i + 1, 1], [kimAd, (o) => o.k], ['1.lik', (o) => o.bir, 1], ['İlk 3', (o) => o.i3, 1], ['Start', (o) => o.start, 1], ['Kazanma', (o) => P(o.yuzde), 1], ['Kazandırdığı ikramiye', (o) => M(o.ikr), 1]], g.slice(0, 20)));
 }
+// ---------- haftalık / aylık tablo ----------
+const AY_UZUN = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+const gunKaydir = (iso, d) => { const t = new Date(iso + 'T12:00:00'); t.setDate(t.getDate() + d); return t.toISOString().slice(0, 10); };
+const haftaBasi = (iso) => { const t = new Date(iso + 'T12:00:00'); return gunKaydir(iso, -((t.getDay() + 6) % 7)); };   // pazartesi
+function donemler(tur) {
+  if (tur === 'ay') {
+    const s = [...new Set(rows.map((r) => r.rc.tarih.slice(0, 7)))].sort().reverse();
+    return s.map((a) => [a, `${AY_UZUN[+a.slice(5) - 1]} ${a.slice(0, 4)}`]);
+  }
+  const s = [...new Set(rows.map((r) => haftaBasi(r.rc.tarih)))].sort().reverse();
+  return s.map((b) => { const e = gunKaydir(b, 6), t1 = new Date(b + 'T12:00:00'), t2 = new Date(e + 'T12:00:00');
+    return [b, t1.getMonth() === t2.getMonth() ? `${t1.getDate()}–${t2.getDate()} ${AY_UZUN[t2.getMonth()]}` : `${t1.getDate()} ${AY_UZUN[t1.getMonth()]} – ${t2.getDate()} ${AY_UZUN[t2.getMonth()]}`]; });
+}
+function donemTablosu(L, alan, kimAd, onek) {
+  const tur = durum[onek + 'Tur'] || 'hafta', D = donemler(tur);
+  let sec = durum[onek + 'Donem']; if (!D.some((d) => d[0] === sec)) sec = D[0]?.[0];
+  const [bas, bit] = tur === 'ay' ? [sec + '-01', sec + '-31'] : [sec, gunKaydir(sec, 6)];
+  const P_ = L.filter((r) => r.rc.tarih >= bas && r.rc.tarih <= bit);
+  const g = grupla(P_, alan).map((o) => ({...o, iki: 0, uc: 0}));
+  const gm = new Map(g.map((o) => [o.k, o])); for (const r of P_) { const o = gm.get(alan(r)); if (!o || r.derecesiz) continue; if (r.sira === 2) o.iki++; if (r.sira === 3) o.uc++; }
+  g.sort((a, b) => b.bir - a.bir || b.iki - a.iki || b.uc - a.uc || a.start - b.start);
+  const ad = (D.find((d) => d[0] === sec)?.[1] || '') + (bit > RAW.son ? ' (devam ediyor)' : '');
+  return kart(`${tur === 'ay' ? 'Aylık' : 'Haftalık'} ${kimAd.toLocaleLowerCase('tr')} tablosu · ${ad}`, tur === 'ay' ? '' : 'Pazartesi–pazar.',
+    `<div class="ctl"><div class="chips" role="group" aria-label="Dönem türü" style="margin:0">${[['hafta', 'Haftalık'], ['ay', 'Aylık']].map(([v, t]) => `<button type="button" class="chip${v === tur ? ' on' : ''}" data-donem-tur="${onek}|${v}">${t}</button>`).join('')}</div>
+     <label>${tur === 'ay' ? 'Ay' : 'Hafta'}<select data-donem="${onek}">${D.map(([v, t]) => `<option value="${v}"${v === sec ? ' selected' : ''}>${t}</option>`).join('')}</select></label></div>` +
+    tablo([['#', (o, i) => i + 1, 1], [kimAd, (o) => o.k], ['1.', (o) => o.bir, 1], ['2.', (o) => o.iki, 1], ['3.', (o) => o.uc, 1], ['Start', (o) => o.start, 1], ['Kazanma', (o) => P(o.yuzde), 1], ['Kazandırdığı ikramiye', (o) => M(o.ikr), 1]],
+      g.filter((o) => o.bir || o.iki || o.uc).slice(0, 25), {bos: 'Bu dönemde koşu yok.'}));
+}
 function jokeyler(L) {
-  let h = siralama(L, (r) => r.jokey, durum.olcutJ, 's_olcutJ', 'Jokey sıralaması', 'Jokey');
+  let h = donemTablosu(L, (r) => r.jokey, 'Jokey', 'dJ');
+  h += siralama(L, (r) => r.jokey, durum.olcutJ, 's_olcutJ', 'Jokey sıralaması (sezon)', 'Jokey');
   const ik = grupla(L, (r) => r.jokey + ' + ' + r.antr).filter((o) => o.bir >= 3).sort((a, b) => b.bir - a.bir || b.yuzde - a.yuzde).slice(0, 15);
   const ap = oranlar(L, (r) => (r.ap ? 'Apranti' : 'Profesyonel'), ['Profesyonel', 'Apranti']);
   h += '<div class="grid">' + kart('En çok birlikte kazanan jokey ve antrenörler', '', tablo([['İkili', (o) => o.k], ['1.lik', (o) => o.bir, 1], ['Start', (o) => o.start, 1], ['Kazanma', (o) => P(o.yuzde), 1]], ik)) +
@@ -303,7 +332,8 @@ function jokeyler(L) {
   return h;
 }
 function antrenorler(L) {
-  let h = siralama(L, (r) => r.antr, durum.olcutA, 's_olcutA', 'Antrenör sıralaması', 'Antrenör');
+  let h = donemTablosu(L, (r) => r.antr, 'Antrenör', 'dA');
+  h += siralama(L, (r) => r.antr, durum.olcutA, 's_olcutA', 'Antrenör sıralaması (sezon)', 'Antrenör');
   const ik = grupla(L, (r) => r.antr + ' + ' + r.jokey).filter((o) => o.bir >= 3).sort((a, b) => b.bir - a.bir || b.yuzde - a.yuzde).slice(0, 15);
   const sh = grupla(L, (r) => r.sahip).sort((a, b) => b.bir - a.bir || a.start - b.start).slice(0, 15);
   h += '<div class="grid">' + kart('En çok birlikte kazanan antrenör ve jokeyler', '', tablo([['İkili', (o) => o.k], ['1.lik', (o) => o.bir, 1], ['Start', (o) => o.start, 1], ['Kazanma', (o) => P(o.yuzde), 1]], ik)) +
@@ -415,6 +445,8 @@ function ciz() {
     kisiKarnesi(); baglaArama('kisiAra', 'kisiAra', kisiKarnesi);
     $('s_olcutJ')?.addEventListener('change', (e) => { durum.olcutJ = e.target.value; ciz(); });
     $('s_olcutA')?.addEventListener('change', (e) => { durum.olcutA = e.target.value; ciz(); });
+    document.querySelectorAll('[data-donem-tur]').forEach((b) => b.addEventListener('click', () => { const [o, v] = b.dataset.donemTur.split('|'); durum[o + 'Tur'] = v; durum[o + 'Donem'] = ''; ciz(); }));
+    document.querySelectorAll('[data-donem]').forEach((s) => s.addEventListener('change', () => { durum[s.dataset.donem + 'Donem'] = s.value; ciz(); }));
   }
   if (sekme === 'yetis') { aygirKarnesi(); kisrakKarnesi(); baglaArama('aygirAra', 'aygirAra', aygirKarnesi); baglaArama('kisrakAra', 'kisrakAra', kisrakKarnesi); }
   const f = Object.values(F).filter((v) => (Array.isArray(v) ? v.length : v)).length;

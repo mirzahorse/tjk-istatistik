@@ -470,7 +470,7 @@
       let sat = T.satir.filter((r) => r[ei]);
       if (sirali) sat = [...sat].sort((a, b) => (sayi(b[di]) ?? -1e18) - (sayi(a[di]) ?? -1e18));
       const Tt = {bas: sut.map((i) => T.bas[i]), satir: sat.slice(0, adet).map((r) => sut.map((i) => r[i])), sag: sut.map((i) => T.sayisal[i])};
-      return {veri: v.slice(0, adet), bicim: 'yatay', T: Tt, birim: T.bas[di]};
+      return {veri: v.slice(0, adet), bicim: 'yatay', T: Tt, birim: ({'1.': 'birincilik', '1.lik': 'birincilik', '2.': 'ikincilik', '3.': 'üçüncülük'})[T.bas[di]] || T.bas[di]};
     }
     async function yenile() {
       const d = veriAl(), sec = $('pgGorunum').value, oto = otomatik(d);
