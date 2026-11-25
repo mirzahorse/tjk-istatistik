@@ -7,7 +7,7 @@ on:
     inputs:
       yillar:
         description: "Yıl aralığı (ör. 2000-2025)"
-        default: "2000-2025"
+        default: "2021-2025"
         required: false
 
 permissions:
@@ -30,7 +30,7 @@ jobs:
         with: { python-version: "3.12" }
       - id: bul
         run: |
-          BAS=${{ inputs.yillar }}; BAS=${BAS:-2000-2025}; A=${BAS%-*}; B=${BAS#*-}
+          BAS=${{ inputs.yillar }}; BAS=${BAS:-2021-2025}; A=${BAS%-*}; B=${BAS#*-}
           LISTE=""
           for Y in $(seq $A $B); do
             if [ -f ozet/$Y.json ]; then echo "$Y: özet zaten var"; continue; fi
@@ -54,7 +54,7 @@ jobs:
     timeout-minutes: 120
     strategy:
       fail-fast: false
-      max-parallel: 2          # TJK sunucusunu yormamak için aynı anda en fazla 2 yıl
+      max-parallel: 3          # TJK sunucusunu yormamak için aynı anda en fazla 3 yıl
       matrix:
         yil: ${{ fromJSON(needs.kesif.outputs.yillar) }}
     steps:

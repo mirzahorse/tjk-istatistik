@@ -81,7 +81,7 @@ def parse_file(path):
     out, race, prize = [], None, None
     for ln in lines[1:]:
         f = ln.split(";")
-        rm = re.match(r"^\s*(\d+)\. Kosu :\s*(.*?)\s*(\d{1,2}\.\d{2})\s*$", f[0])
+        rm = re.match(r"^\s*(\d+)\. Kosu :\s*(.*?)\s*(\d{1,2}[.:]\d{2})\s*$", f[0])  # eski yıllarda saat 13:30 biçiminde
         if rm:
             parts = [p.strip() for p in f]
             mes = next((int(x[:-1]) for x in parts if re.fullmatch(r"\d{3,4}m", x)), None)
@@ -89,7 +89,7 @@ def parse_file(path):
             grp = parts[2] if len(parts) > 2 else ""
             sinif = parts[1] if len(parts) > 1 else ""
             rek = re.search(r"Rekor Derece :\s*([\d.:]+)", ln)
-            race = {"kosu_no": int(rm[1]), "kosu_adi": rm[2].strip(), "saat": rm[3], "sinif": sinif, "kosu_turu": tur(sinif),
+            race = {"kosu_no": int(rm[1]), "kosu_adi": rm[2].strip(), "saat": rm[3].replace(":", "."), "sinif": sinif, "kosu_turu": tur(sinif),
                     "disi_kosusu": "Dişi" in sinif, "yas_grubu": re.sub(r"\s*(İngilizler|Araplar)$", "", grp),
                     "irk": "İngiliz" if "İngiliz" in grp else ("Arap" if "Arap" in grp else ""),
                     "mesafe": mes, "pist": pist, "rekor": rek[1] if rek else ""}
