@@ -166,7 +166,7 @@ function suzulmus() {
 
 // ---------- sekmeler ----------
 let sekme = 'genel';
-const durum = {atAra: '', atSec: '', grup: 'jokey', olcut: 'bir', kisiAra: '', aygirAra: '', kisrakAra: ''};
+const durum = {atAra: '', atSec: '', olcutJ: 'bir', olcutA: 'bir', kisiAra: '', aygirAra: '', kisrakAra: ''};
 document.querySelectorAll('#sekmeler button').forEach((b) => b.addEventListener('click', () => {
   sekme = b.dataset.tab; document.querySelectorAll('#sekmeler button').forEach((x) => x.classList.toggle('on', x === b)); ciz(); history.replaceState(null, '', '#' + sekme);
 }));
@@ -282,33 +282,46 @@ function atKarnesi() {
   el.querySelectorAll('[data-at]').forEach((b) => b.addEventListener('click', () => { durum.atSec = b.dataset.at; atKarnesi(); }));
 }
 
-function insan(L) {
-  const alan = {jokey: (r) => r.jokey, antr: (r) => r.antr, sahip: (r) => r.sahip}[durum.grup];
+// ---------- jokeyler / antrenörler ----------
+function siralama(L, alan, olcut, id, baslik, kimAd) {
   let g = grupla(L, alan);
-  const ol = durum.olcut;
-  if (ol === 'yuzde') g = g.filter((o) => o.start >= 30).sort((a, b) => b.yuzde - a.yuzde);
-  else if (ol === 'ikr') g.sort((a, b) => b.ikr - a.ikr);
-  else if (ol === 'kar') g = g.filter((o) => o.oyn >= 50).sort((a, b) => b.kar - a.kar);
-  else if (ol === 'zarar') g = g.filter((o) => o.oyn >= 50).sort((a, b) => a.kar - b.kar);
+  if (olcut === 'yuzde') g = g.filter((o) => o.start >= 30).sort((a, b) => b.yuzde - a.yuzde);
+  else if (olcut === 'ikr') g.sort((a, b) => b.ikr - a.ikr);
+  else if (olcut === 'kar') g = g.filter((o) => o.oyn >= 50).sort((a, b) => b.kar - a.kar);
+  else if (olcut === 'zarar') g = g.filter((o) => o.oyn >= 50).sort((a, b) => a.kar - b.kar);
   else g.sort((a, b) => b.bir - a.bir || a.start - b.start);
-  const sel = (id, opts, cur) => `<select id="${id}">${opts.map(([v, t]) => `<option value="${v}"${v === cur ? ' selected' : ''}>${t}</option>`).join('')}</select>`;
-  let h = kart('Sıralama', 'Kâr/zarar: her starta 1 TL ganyan oynansaydı ne kadar kazanılır ya da kaybedilirdi (en az 50 start).',
-    `<div class="ctl"><label>Kim?${sel('s_grup', [['jokey', 'Jokeyler'], ['antr', 'Antrenörler'], ['sahip', 'Sahipler']], durum.grup)}</label><label>Sırala${sel('s_olcut', [['bir', 'Birincilik sayısı'], ['yuzde', 'Kazanma % (30+ start)'], ['ikr', 'İkramiye'], ['kar', 'En kârlı'], ['zarar', 'En zararlı']], ol)}</label></div>` +
-    tablo([['#', (o, i) => i + 1, 1], ['İsim', (o) => o.k], ['1.lik', (o) => o.bir, 1], ['İlk 3', (o) => o.i3, 1], ['Start', (o) => o.start, 1], ['Kazanma', (o) => P(o.yuzde), 1], ['İkramiye', (o) => M(o.ikr), 1], ['1 TL kâr/zarar', (o) => (o.kar >= 0 ? '+' : '') + nf2.format(o.kar) + ' TL', 1, karCls]], g.slice(0, 20)));
+  const sec = `<select id="${id}">${[['bir', 'Birincilik sayısı'], ['yuzde', 'Kazanma % (30+ start)'], ['ikr', 'İkramiye'], ['kar', 'En kârlı'], ['zarar', 'En zararlı']].map(([v, t]) => `<option value="${v}"${v === olcut ? ' selected' : ''}>${t}</option>`).join('')}</select>`;
+  return kart(baslik, 'Kâr/zarar: her starta 1 TL ganyan oynansaydı ne kadar kazanılır ya da kaybedilirdi (en az 50 start).',
+    `<div class="ctl"><label>Sırala${sec}</label></div>` +
+    tablo([['#', (o, i) => i + 1, 1], [kimAd, (o) => o.k], ['1.lik', (o) => o.bir, 1], ['İlk 3', (o) => o.i3, 1], ['Start', (o) => o.start, 1], ['Kazanma', (o) => P(o.yuzde), 1], ['İkramiye', (o) => M(o.ikr), 1], ['1 TL kâr/zarar', (o) => (o.kar >= 0 ? '+' : '') + nf2.format(o.kar) + ' TL', 1, karCls]], g.slice(0, 20)));
+}
+function jokeyler(L) {
+  let h = siralama(L, (r) => r.jokey, durum.olcutJ, 's_olcutJ', 'Jokey sıralaması', 'Jokey');
   const ik = grupla(L, (r) => r.jokey + ' + ' + r.antr).filter((o) => o.bir >= 3).sort((a, b) => b.bir - a.bir || b.yuzde - a.yuzde).slice(0, 15);
   const ap = oranlar(L, (r) => (r.ap ? 'Apranti' : 'Profesyonel'), ['Profesyonel', 'Apranti']);
   h += '<div class="grid">' + kart('Jokey–antrenör ikilileri', 'En çok birlikte kazananlar.', tablo([['İkili', (o) => o.k], ['1.lik', (o) => o.bir, 1], ['Start', (o) => o.start, 1], ['Kazanma', (o) => P(o.yuzde), 1]], ik)) +
     kart('Apranti etkisi', 'Apranti (çırak) jokeylerle profesyonellerin kazanma oranı.', cubuk(ap.map((o) => ({k: o.k, v: o.yuzde, alt: N(o.start) + ' start'})), {fmt: P, aria: 'Apranti ve profesyonel kazanma oranı'})) + '</div>';
-  h += kart('Kişi karnesi: hangi hipodromda daha güçlü?', 'Jokey veya antrenör adının bir kısmını yazın (ör. ÇİÇEK).', `<div class="ctl"><label>Jokey / antrenör<input id="kisiAra" value="${esc(durum.kisiAra)}" placeholder="ör. M.ÇİÇEK"></label></div><div id="kisiSonuc"></div>`);
+  h += kart('Jokey karnesi: hangi hipodromda daha güçlü?', 'Jokey adının bir kısmını yazın (ör. ÇİÇEK).', `<div class="ctl"><label>Jokey<input id="kisiAra" value="${esc(durum.kisiAra)}" placeholder="ör. M.ÇİÇEK"></label></div><div id="kisiSonuc"></div>`);
+  return h;
+}
+function antrenorler(L) {
+  let h = siralama(L, (r) => r.antr, durum.olcutA, 's_olcutA', 'Antrenör sıralaması', 'Antrenör');
+  const ik = grupla(L, (r) => r.antr + ' + ' + r.jokey).filter((o) => o.bir >= 3).sort((a, b) => b.bir - a.bir || b.yuzde - a.yuzde).slice(0, 15);
+  const sh = grupla(L, (r) => r.sahip).sort((a, b) => b.bir - a.bir || a.start - b.start).slice(0, 15);
+  h += '<div class="grid">' + kart('Antrenörün en çok kazandığı jokeyler', 'Antrenör + jokey ikilileri, en çok birlikte kazananlar.', tablo([['İkili', (o) => o.k], ['1.lik', (o) => o.bir, 1], ['Start', (o) => o.start, 1], ['Kazanma', (o) => P(o.yuzde), 1]], ik)) +
+    kart('Sahip sıralaması', 'En çok birincilik alan at sahipleri.', tablo([['#', (o, i) => i + 1, 1], ['Sahip', (o) => o.k], ['1.lik', (o) => o.bir, 1], ['Start', (o) => o.start, 1], ['İkramiye', (o) => M(o.ikr), 1]], sh)) + '</div>';
+  h += kart('Antrenör karnesi: hangi hipodromda daha güçlü?', 'Antrenör adının bir kısmını yazın (ör. ÖZGÜL).', `<div class="ctl"><label>Antrenör<input id="kisiAra" value="${esc(durum.kisiAra)}" placeholder="ör. M.ÖZGÜL"></label></div><div id="kisiSonuc"></div>`);
   return h;
 }
 function kisiKarnesi() {
   const el = $('kisiSonuc'); if (!el) return;
   const q = U(durum.kisiAra); if (!q) { el.innerHTML = ''; return; }
-  const L = suzulmus();
-  const js = grupla(L.filter((r) => r.jokey.includes(q)), (r) => r.rc.hip), as = grupla(L.filter((r) => r.antr.includes(q)), (r) => r.rc.hip);
+  const jokey = sekme === 'jokey', alan = jokey ? (r) => r.jokey : (r) => r.antr;
+  const L = suzulmus().filter((r) => alan(r).includes(q));
+  const adlar = [...new Set(L.map(alan))];
   const kol = [['Hipodrom', (o) => o.k], ['Start', (o) => o.start, 1], ['1.lik', (o) => o.bir, 1], ['Kazanma', (o) => P(o.yuzde), 1], ['1 TL kâr/zarar', (o) => (o.kar >= 0 ? '+' : '') + nf2.format(o.kar), 1, karCls]];
-  el.innerHTML = '<div class="grid">' + kart('Jokey olarak', '', tablo(kol, js.sort((a, b) => b.start - a.start), {bos: 'Bu isimde jokey yok.'})) + kart('Antrenör olarak', '', tablo(kol, as.sort((a, b) => b.start - a.start), {bos: 'Bu isimde antrenör yok.'})) + '</div>';
+  el.innerHTML = (adlar.length > 1 ? `<p class="d">${adlar.length} isim eşleşti: ${esc(adlar.slice(0, 8).join(', '))}${adlar.length > 8 ? '…' : ''}. Daha uzun yazarak daraltabilirsiniz.</p>` : '') +
+    tablo(kol, grupla(L, (r) => r.rc.hip).sort((a, b) => b.start - a.start), {bos: jokey ? 'Bu isimde jokey yok.' : 'Bu isimde antrenör yok.'});
 }
 
 function yetis(L) {
@@ -392,13 +405,13 @@ function ciz() {
   $('filtreler').hidden = sekme === 'oyun' || sekme === 'tum';
   if (sekme === 'oyun') { el.innerHTML = '<div id="oyunAlan"></div>'; if (window.tjkOyun) window.tjkOyun.baslat(); }
   else if (sekme === 'tum') { el.innerHTML = '<div id="tumAlan"></div>'; if (window.tjkTum) window.tjkTum.baslat(); }
-  else el.innerHTML = {genel, atlar, insan, yetis, kosul, sonuc}[sekme](L);
+  else el.innerHTML = {genel, atlar, jokey: jokeyler, antr: antrenorler, yetis, kosul, sonuc}[sekme](L);
   $('aprHepsi')?.addEventListener('change', (e) => { durum.aprHepsi = e.target.checked; ciz(); });
   if (sekme === 'atlar') { atKarnesi(); baglaArama('atAra', 'atAra', atKarnesi); }
-  if (sekme === 'insan') {
+  if (sekme === 'jokey' || sekme === 'antr') {
     kisiKarnesi(); baglaArama('kisiAra', 'kisiAra', kisiKarnesi);
-    $('s_grup').addEventListener('change', (e) => { durum.grup = e.target.value; ciz(); });
-    $('s_olcut').addEventListener('change', (e) => { durum.olcut = e.target.value; ciz(); });
+    $('s_olcutJ')?.addEventListener('change', (e) => { durum.olcutJ = e.target.value; ciz(); });
+    $('s_olcutA')?.addEventListener('change', (e) => { durum.olcutA = e.target.value; ciz(); });
   }
   if (sekme === 'yetis') { aygirKarnesi(); kisrakKarnesi(); baglaArama('aygirAra', 'aygirAra', aygirKarnesi); baglaArama('kisrakAra', 'kisrakAra', kisrakKarnesi); }
   const f = Object.values(F).filter((v) => (Array.isArray(v) ? v.length : v)).length;
@@ -428,5 +441,5 @@ function pist() {
 }
 pist();
 $('dipnot').textContent = `Kaynak: TJK resmi günlük sonuç dosyaları (medya-cdn.tjk.org). Koşmayan atlar hariç. İkramiye yalnızca birincilik ikramiyesidir. Atlar ad + baba + anne ile ayırt edilir. Son yarış günü: ${tarih(RAW.son)}. Bu sayfa bağımsızdır, TJK ile bağlantısı yoktur.`;
-const h0 = location.hash.slice(1); if (['genel', 'atlar', 'insan', 'yetis', 'kosul', 'sonuc', 'tum', 'oyun'].includes(h0)) { sekme = h0; document.querySelectorAll('#sekmeler button').forEach((x) => x.classList.toggle('on', x.dataset.tab === h0)); }
+let h0 = location.hash.slice(1); if (h0 === 'insan') h0 = 'jokey'; if (['genel', 'atlar', 'jokey', 'antr', 'yetis', 'kosul', 'sonuc', 'tum', 'oyun'].includes(h0)) { sekme = h0; document.querySelectorAll('#sekmeler button').forEach((x) => x.classList.toggle('on', x.dataset.tab === h0)); }
 ciz();
