@@ -9,6 +9,10 @@ on:
         description: "elle | zamanlayici"
         default: "elle"
         required: false
+      gun:
+        description: "Kaç gün geriye bakılsın (0 = yılın tamamı; boş = otomatik)"
+        default: ""
+        required: false
 
 permissions:
   contents: write
@@ -22,7 +26,7 @@ concurrency:
 jobs:
   guncelle:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
     outputs:
       degisti: ${{ steps.kaydet.outputs.degisti }}
     steps:
@@ -35,7 +39,7 @@ jobs:
       - name: Sonuçları TJK'dan indir (bugün ve dün yenilenir)
         run: |
           # her saat yalnızca bugün ve dün; günde bir kez (06:17) ve elle çalıştırınca son 7 gün
-          if [ "$(date -u +%H)" = "03" ] || [ "${{ inputs.kaynak }}" = "elle" ]; then GUN=7; else GUN=2; fi
+          if [ -n "${{ inputs.gun }}" ]; then GUN="${{ inputs.gun }}"; elif [ "$(date -u +%H)" = "03" ] || [ "${{ inputs.kaynak }}" = "elle" ]; then GUN=7; else GUN=2; fi
           python3 tjk_indir.py --klasor veri --gun $GUN
 
       - name: Sitenin veri dosyasını yeniden oluştur
