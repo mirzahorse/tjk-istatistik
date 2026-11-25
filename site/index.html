@@ -127,6 +127,21 @@ html.kilitli .navwrap,html.kilitli main,html.kilitli footer,html.kilitli #pist{d
 .kapi-kutu .kapi-hatirla{flex-direction:row;align-items:center;gap:8px}.kapi-hatirla input{accent-color:var(--yesil);width:16px;height:16px;margin:0}
 .kapi-hata{color:var(--bad)!important;min-height:1.2em}
 .kapi-kutu .btn{background:var(--yesil);color:var(--lacivert);padding:11px 14px;font-size:15px}.kapi-kutu .btn:disabled{opacity:.7;cursor:wait}
+.card{position:relative}
+.png-btn{position:absolute;top:14px;right:14px;z-index:2;font:600 12px Inter,sans-serif;color:var(--mut);background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:4px 11px 4px 26px;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238A97AD' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4v11m0 0l-4-4m4 4l4-4M5 20h14'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:9px 50%}
+.png-btn:hover{color:var(--fg);border-color:var(--mut)}
+.card>h2{padding-right:70px}
+.pngp{position:fixed;inset:0;z-index:60;background:rgba(3,7,15,.78);display:grid;place-items:center;padding:16px;overflow:auto}
+.pngp-kutu{width:min(1180px,100%);background:var(--panel);border:1px solid var(--line);border-radius:var(--R);padding:18px 20px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.pngp-ust{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.pngp-ust h2{margin:0;font-size:20px}
+.pngp-kapat{background:none;border:0;color:var(--mut);font-size:20px;cursor:pointer;padding:4px 8px}.pngp-kapat:hover{color:var(--fg)}
+.pngp-govde{display:grid;grid-template-columns:280px minmax(0,1fr);gap:20px;align-items:start}
+.pngp-ayar{display:flex;flex-direction:column;gap:12px}.pngp-ayar #pgTablo{display:flex;flex-direction:column;gap:12px}
+.pngp-ayar label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--mut)}
+.pngp-ayar .pngp-kutucuk{flex-direction:row;align-items:center;gap:8px;font-size:13px}.pngp-kutucuk input{accent-color:var(--yesil)}
+.pngp-ayar .btn{background:var(--yesil);color:var(--lacivert);padding:11px;font-size:15px;margin-top:4px}
+.pngp-onizleme canvas{width:100%;height:auto;max-height:72vh;object-fit:contain;display:block;border-radius:10px;border:1px solid var(--line)}
+@media (max-width:820px){.pngp-govde{grid-template-columns:1fr}.pngp-onizleme{order:-1}}
 .cikis{display:block;margin:-28px auto 30px;max-width:1140px;width:calc(100% - 40px);text-align:left;background:none;border:0;color:var(--mut);font:inherit;font-size:12px;text-decoration:underline;cursor:pointer;padding:0}
 </style>
 </head>
