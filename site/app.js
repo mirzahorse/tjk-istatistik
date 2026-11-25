@@ -172,7 +172,7 @@ function suzulmus() {
 let sekme = 'genel';
 const durum = {atAra: '', atSec: '', olcutJ: 'bir', olcutA: 'bir', kisiAra: '', aygirAra: '', kisrakAra: ''};
 document.querySelectorAll('#sekmeler button').forEach((b) => b.addEventListener('click', () => {
-  sekme = b.dataset.tab; document.querySelectorAll('#sekmeler button').forEach((x) => x.classList.toggle('on', x === b)); ciz(); history.replaceState(null, '', '#' + sekme);
+  sekme = b.dataset.tab; window.tjkIzle?.(b.textContent.trim()); document.querySelectorAll('#sekmeler button').forEach((x) => x.classList.toggle('on', x === b)); ciz(); history.replaceState(null, '', '#' + sekme);
 }));
 
 // ---------- jokey olmaya kalan (apranti) ----------

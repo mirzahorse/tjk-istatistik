@@ -3,7 +3,19 @@
 // Özel anahtar, her kullanıcı için o kullanıcının şifresiyle ayrı kilitlenmiştir (kullanicilar.json).
 // Şifre hiçbir yere gönderilmez; çözme tamamen tarayıcıda yapılır.
 (() => {
-  const SAKLA = 'tjk_ozel_v2';
+  const SAKLA = 'tjk_ozel_v2', SAKLA_AD = 'tjk_ad_v1';
+  // Giriş kaydı: Google E-Tablo'ya bağlı Apps Script adresi (boşsa kayıt tutulmaz)
+  const IZLEME_URL = '';
+  let kullanici = '';
+  function izle(olay, sekme) {
+    if (!IZLEME_URL || !kullanici) return;
+    const ua = navigator.userAgent, cihaz = /iPad|Tablet/i.test(ua) ? 'Tablet' : /Mobi|Android|iPhone/i.test(ua) ? 'Telefon' : 'Bilgisayar';
+    const tarayici = /Edg\//.test(ua) ? 'Edge' : /OPR\//.test(ua) ? 'Opera' : /Chrome\//.test(ua) ? 'Chrome' : /Firefox\//.test(ua) ? 'Firefox' : /Safari\//.test(ua) ? 'Safari' : 'Diğer';
+    const veri = JSON.stringify({k: kullanici, o: olay, s: sekme || '', c: cihaz, t: tarayici});
+    try { if (!navigator.sendBeacon(IZLEME_URL, veri)) fetch(IZLEME_URL, {method: 'POST', mode: 'no-cors', body: veri}); } catch (e) {}
+  }
+  let sonSekme = '';
+  window.tjkIzle = (sekme) => { if (sekme && sekme !== sonSekme) { sonSekme = sekme; izle('sekme', sekme); } };
   const SURUM = '__SURUM__';   // yayında commit kimliğiyle değişir: tarayıcı eski dosyayı kullanmasın
   const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
   const enc = new TextEncoder(), dec = new TextDecoder();
@@ -65,7 +77,7 @@
     const f = $g('dipnot'); if (!f) return;
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'cikis'; b.textContent = 'Çıkış yap';
-    b.addEventListener('click', () => { try { localStorage.removeItem(SAKLA); sessionStorage.removeItem(SAKLA); } catch (e) {} location.reload(); });
+    b.addEventListener('click', () => { izle('çıkış'); try { for (const d of [localStorage, sessionStorage]) { d.removeItem(SAKLA); d.removeItem(SAKLA_AD); } } catch (e) {} setTimeout(() => location.reload(), 150); });
     f.after(b);
   }
 
@@ -81,6 +93,7 @@
       <label>Şifre<input name="password" id="kSifre" type="password" autocomplete="current-password" required></label>
       <label class="kapi-hatirla"><input type="checkbox" id="kHatirla" checked> Bu cihazda açık kalsın</label>
       <p class="kapi-hata" id="kHata" role="alert">${hataMetni || ''}</p>
+      ${IZLEME_URL ? '<p class="kapi-not">Girişler kayıt altına alınır.</p>' : ''}
       <button class="btn" type="submit" id="kGir">Giriş yap</button>
     </form>`;
     document.body.appendChild(d);
@@ -93,7 +106,9 @@
         if (!ham) { $g('kHata').textContent = 'Kullanıcı adı ya da şifre yanlış.'; $g('kSifre').select(); return; }
         anahtar = await anahtarYap(ham);
         let sak = ''; for (const c of ham) sak += String.fromCharCode(c); sak = btoa(sak);
-        try { ($g('kHatirla').checked ? localStorage : sessionStorage).setItem(SAKLA, sak); } catch (err) {}
+        kullanici = kucuk($g('kAd').value);
+        try { const dp = $g('kHatirla').checked ? localStorage : sessionStorage; dp.setItem(SAKLA, sak); dp.setItem(SAKLA_AD, kullanici); } catch (err) {}
+        izle('giriş');
         btn.textContent = 'Veri açılıyor…';
         await baslat();
       } catch (err) {
@@ -106,9 +121,9 @@
   (async () => {
     if (!window.crypto?.subtle) { kapi('Bu tarayıcı şifreli sayfayı açamıyor. Güncel bir tarayıcıyla deneyin.'); return; }
     let sak = null;
-    try { sak = localStorage.getItem(SAKLA) || sessionStorage.getItem(SAKLA); } catch (e) {}
+    try { sak = localStorage.getItem(SAKLA) || sessionStorage.getItem(SAKLA); kullanici = localStorage.getItem(SAKLA_AD) || sessionStorage.getItem(SAKLA_AD) || ''; } catch (e) {}
     if (sak) {
-      try { anahtar = await anahtarYap(b64(sak)); await baslat(); return; } catch (e) {
+      try { anahtar = await anahtarYap(b64(sak)); izle('açılış'); await baslat(); return; } catch (e) {
         // anahtar değişmiş olabilir: yeniden giriş iste
         try { localStorage.removeItem(SAKLA); sessionStorage.removeItem(SAKLA); } catch (err) {}
       }
