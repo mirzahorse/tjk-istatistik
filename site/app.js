@@ -276,10 +276,10 @@ function siralama(L, alan, olcut, id, baslik, kimAd) {
   if (olcut === 'yuzde') g = g.filter((o) => o.start >= 30).sort((a, b) => b.yuzde - a.yuzde);
   else if (olcut === 'ikr') g.sort((a, b) => b.ikr - a.ikr);
   else g.sort((a, b) => b.bir - a.bir || a.start - b.start);
-  const sec = `<select id="${id}">${[['bir', 'Birincilik sayısı'], ['yuzde', 'Kazanma yüzdesi'], ['ikr', 'Kazanç']].map(([v, t]) => `<option value="${v}"${v === olcut ? ' selected' : ''}>${t}</option>`).join('')}</select>`;
+  const sec = `<select id="${id}">${[['bir', 'Birincilik sayısı'], ['yuzde', 'Kazanma yüzdesi'], ['ikr', 'Kazandırdığı ikramiye']].map(([v, t]) => `<option value="${v}"${v === olcut ? ' selected' : ''}>${t}</option>`).join('')}</select>`;
   return kart(baslik, olcut === 'yuzde' ? 'En az 30 kez koşanlar arasında.' : '',
     `<div class="ctl"><label>Sırala${sec}</label></div>` +
-    tablo([['#', (o, i) => i + 1, 1], [kimAd, (o) => o.k], ['1.lik', (o) => o.bir, 1], ['İlk 3', (o) => o.i3, 1], ['Start', (o) => o.start, 1], ['Kazanma', (o) => P(o.yuzde), 1], ['Kazanç', (o) => M(o.ikr), 1]], g.slice(0, 20)));
+    tablo([['#', (o, i) => i + 1, 1], [kimAd, (o) => o.k], ['1.lik', (o) => o.bir, 1], ['İlk 3', (o) => o.i3, 1], ['Start', (o) => o.start, 1], ['Kazanma', (o) => P(o.yuzde), 1], ['Kazandırdığı ikramiye', (o) => M(o.ikr), 1]], g.slice(0, 20)));
 }
 function jokeyler(L) {
   let h = siralama(L, (r) => r.jokey, durum.olcutJ, 's_olcutJ', 'Jokey sıralaması', 'Jokey');
@@ -313,7 +313,7 @@ function kisiKarnesi() {
 function yetis(L) {
   const g = grupla(L, (r) => r.baba).sort((a, b) => b.bir - a.bir).slice(0, 20);
   const iki = new Map(); for (const r of L) if (r.yas === 2 && r.w) iki.set(r.baba, (iki.get(r.baba) || 0) + 1);
-  let h = kart('Aygır sıralaması', 'Tayların toplam başarısına göre.', tablo([['#', (o, i) => i + 1, 1], ['Aygır', (o) => o.k], ['Kazanan tay', (o) => o.kazAt.size, 1], ['1.lik', (o) => o.bir, 1], ['Start', (o) => o.start, 1], ['Kazanma', (o) => P(o.yuzde), 1], ['Kazanç', (o) => M(o.ikr), 1]], g));
+  let h = kart('Aygır sıralaması', 'Tayların toplam başarısına göre.', tablo([['#', (o, i) => i + 1, 1], ['Aygır', (o) => o.k], ['Kazanan tay', (o) => o.kazAt.size, 1], ['1.lik', (o) => o.bir, 1], ['Start', (o) => o.start, 1], ['Kazanma', (o) => P(o.yuzde), 1], ['Kazandırdığı ikramiye', (o) => M(o.ikr), 1]], g));
   h += '<div class="grid">' + kart('Aygır ara', 'Taylarının pist ve mesafeye göre başarısı.', `<div class="ctl"><label>Aygır (baba)<input id="aygirAra" value="${esc(durum.aygirAra)}" placeholder="ör. APPROVE"></label></div><div id="aygirSonuc"></div>`) +
     kart('Kısrak ara', 'Aynı anneden gelen atlar.', `<div class="ctl"><label>Kısrak (anne)<input id="kisrakAra" value="${esc(durum.kisrakAra)}" placeholder="ör. COPY CAT"></label></div><div id="kisrakSonuc"></div>`) + '</div>';
   return h;
@@ -432,6 +432,6 @@ function pist() {
   if (pistIlk && !azalt) requestAnimationFrame(() => requestAnimationFrame(() => $('pist').querySelectorAll('.at').forEach((a) => { a.style.width = a.dataset.w + '%'; })));
   pistIlk = false;
 }
-$('dipnot').textContent = `Kaynak: TJK resmi sonuçları. Son yarış günü: ${tarih(RAW.son)}. Kazanç: ilk 5 sıraya verilen ikramiyelerin toplamı (yetiştirici primi hariç).`;
+$('dipnot').textContent = `Kaynak: TJK resmi sonuçları. Son yarış günü: ${tarih(RAW.son)}. Kazanç ve kazandırdığı ikramiye: ilk 5 sıraya verilen ikramiyelerin toplamı (yetiştirici primi hariç). Jokey, antrenör ve aygır için bu, atlarının kazandığı ikramiyedir.`;
 let h0 = location.hash.slice(1); if (h0 === 'insan') h0 = 'jokey'; if (['genel', 'akis', 'atlar', 'jokey', 'antr', 'yetis', 'kosul', 'sonuc', 'tum', 'oneri'].includes(h0)) { sekme = h0; document.querySelectorAll('#sekmeler button').forEach((x) => x.classList.toggle('on', x.dataset.tab === h0)); }
 ciz();

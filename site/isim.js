@@ -88,7 +88,7 @@
       const s = L[0];
       h += `<p class="d">${esc(s.yas)} yaşlı ${esc(String(s.renk).toLowerCase())} ${esc(String(s.cins).toLowerCase())} · <span class="isim" data-isim="${esc(s.baba)}" data-tur="baba" role="button" tabindex="0">${esc(s.baba)}</span> – <span class="isim" data-isim="${esc(s.anne)}" data-tur="anne" role="button" tabindex="0">${esc(s.anne)}</span><br>Antrenör <span class="isim" data-isim="${esc(s.antr)}" data-tur="antr" role="button" tabindex="0">${esc(s.antr)}</span> · Sahip <span class="isim" data-isim="${esc(s.sahip)}" data-tur="sahip" role="button" tabindex="0">${esc(s.sahip)}</span></p>`;
     }
-    h += '<div class="tiles">' + kutu('Start', N(L.length)) + kutu('1.lik', N(kaz.length), L.length ? P(pct(kaz.length, L.length)) : '') + kutu('İlk 3', N(i3.length)) + kutu('Kazanç', M(sum(L, (r) => r.kz))) + '</div>';
+    h += '<div class="tiles">' + kutu('Start', N(L.length)) + kutu('1.lik', N(kaz.length), L.length ? P(pct(kaz.length, L.length)) : '') + kutu('İlk 3', N(i3.length)) + kutu(tur === 'at' || tur === 'sahip' ? 'Kazanç' : 'Kazandırdığı ikramiye', M(sum(L, (r) => r.kz))) + '</div>';
     if (tur !== 'at') {
       if (tur === 'baba' || tur === 'anne') {
         const taylar = grupla(L, (r) => r.k).sort((a, b) => b.bir - a.bir || b.start - a.start).slice(0, 12);
@@ -155,7 +155,7 @@
     if (at) notlar.push([tur === 'baba' || tur === 'anne' ? 'En çok kazanan yavrusu' : 'En çok kazandığı at', `${at[0]} · ${at[1]} birincilik`]);
     if (tur === 'jokey' || tur === 'antr') { const o = enCok((r) => (tur === 'jokey' ? r.antr : r.jokey)); if (o) notlar.push([tur === 'jokey' ? 'En çok birlikte kazandığı antrenör' : 'En çok kazandığı jokey', `${o[0]} · ${o[1]}`]); }
     return {ad, rol: `${TUR[tur].ad} · ${yil} sezonu`,
-      istat: [{k: atAd, metin: N(new Set(L.map((r) => r.k)).size)}, {k: kazAd, metin: N(kaz.length), vurgu: 1}, {k: 'Koşu', metin: N(n)}, {k: 'Kazanç', metin: M(sum(L, (r) => r.kz))}],
+      istat: [{k: atAd, metin: N(new Set(L.map((r) => r.k)).size)}, {k: kazAd, metin: N(kaz.length), vurgu: 1}, {k: 'Koşu', metin: N(n)}, {k: tur === 'sahip' ? 'Kazanç' : 'Kazandırdığı ikramiye', metin: M(sum(L, (r) => r.kz))}],
       halka: [{k: 'Kazanma yüzdesi', yuzde: yz(kaz.length)}, {k: 'Tabela yüzdesi', yuzde: yz(tab.length)}],
       seri: {baslik: 'Aylara göre birincilik', veri: ayl}, notlar: notlar.slice(0, 3),
       dipnot: `Tabela: ilk ${TABELA}`, aciklama: `Tabela yüzdesi: koşularının ilk ${TABELA} içinde bittiği oran.`};
