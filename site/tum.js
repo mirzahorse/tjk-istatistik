@@ -10,7 +10,7 @@
   const fold = (s) => String(s || '').toLocaleUpperCase('tr').replace(/\s+/g, ' ').trim();
 
   async function veri(k) {
-    if (!yuk[k]) yuk[k] = fetch('kariyer/' + k + '.json', {cache: 'no-cache'}).then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); });
+    if (!yuk[k]) yuk[k] = window.tjkCoz('kariyer/' + k + '.enc').then(JSON.parse);
     return yuk[k];
   }
   const adGoster = (k, ad) => {

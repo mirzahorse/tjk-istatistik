@@ -1,4 +1,7 @@
-__pycache__/
 *.part
 *.zip
 .DS_Store
+__pycache__/
+site/data.enc
+site/data.js
+site/kariyer/

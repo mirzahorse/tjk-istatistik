@@ -8,7 +8,7 @@ Bu site bağımsızdır, TJK ile bağlantısı yoktur.
 Her saat (xx:17) GitHub Actions şunları yapar (bilgisayarınızın açık olması gerekmez):
 
 1. `tjk_indir.py` bugünün ve dünün resmi sonuç CSV'lerini `veri/` klasörüne indirir (günde bir kez, 06:17'de, son 7 güne bakar).
-2. `build_site.py` bu CSV'lerden `site/data.js` dosyasını yeniden üretir.
+2. `build_site.py` bu CSV'lerden `site/data.js` dosyasını yeniden üretir; yayından hemen önce `sifrele.py` bunu şifreler (`data.enc`). Şifresiz veri depoya da yayına da konmaz.
 3. Değişiklik varsa depoya kaydeder ve siteyi GitHub Pages'te yeniden yayınlar.
 
 Site adresi: https://mirzahorse.github.io/tjk-istatistik/
@@ -44,3 +44,15 @@ python3 build_site.py veri site
 ```
 
 Sonra `site/index.html` dosyasını açın.
+
+## Giriş ve şifreler
+
+Site kullanıcı adı + şifreyle açılır. Veri tarayıcıda çözülür; şifreler hiçbir yerde düz metin olarak tutulmaz.
+
+- Kullanıcılar: `site/kullanicilar.json` (her kullanıcı için ayrı kilit).
+- GitHub'da **Settings → Secrets and variables → Actions → `YONETICI_SIFRE`** = admin kullanıcısının şifresi. Yayın bu olmadan yapılmaz.
+- Kullanıcı eklemek / silmek:
+  ```
+  YONETICI_SIFRE=... python3 kullanici.py ekle yeniad     # rastgele şifre üretir, bir kez gösterir
+  python3 kullanici.py sil eskiad
+  ```
