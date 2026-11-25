@@ -1,0 +1,23 @@
+name: Program dosyası dene
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  dene:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          for G in 26 27 28 29 30; do
+            for S in "İstanbul" "İzmir" "Bursa" "Ankara" "Adana" "Elazığ" "Antalya" "Kocaeli" "Şanlıurfa" "Diyarbakır"; do
+              for T in GunlukYarisProgrami YarisProgrami GunlukYarisProgramiTR; do
+                Y="/raporftp/TJKPDF/2026/2026-11-$G/CSV/$T/$G.11.2026-$S-$T-TR.csv"
+                U="https://medya-cdn.tjk.org$(python3 -c "import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1]))" "$Y")"
+                K=$(curl -s -o /tmp/p.csv -w '%{http_code}' -A Mozilla/5.0 "$U")
+                if [ "$K" = "200" ] && ! grep -qi "<html" /tmp/p.csv; then echo "VAR $G $S $T"; head -12 /tmp/p.csv | cut -c1-200; fi
+              done
+            done
+          done
+          # klasör listesi açık mı?
+          curl -s -A Mozilla/5.0 "https://medya-cdn.tjk.org/raporftp/TJKPDF/2026/2026-11-27/CSV/" | head -40
+          curl -s -A Mozilla/5.0 "https://medya-cdn.tjk.org/raporftp/TJKPDF/2026/2026-11-25/" | head -40
