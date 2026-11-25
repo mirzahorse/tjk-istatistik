@@ -171,15 +171,17 @@
       <div class="buyuk">${D.skor}/${TUR_SAYISI}</div><p style="font-weight:600;margin:10px 0 4px">${esc(mesaj)}</p>
       <p style="color:var(--mut);margin:0">${esc(kat)} · En uzun seri ${D.enSeri}${yeni ? ' · Yeni rekor!' : ' · Rekor ' + Math.max(eski, D.skor)}</p>
       <div style="margin-top:16px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button type="button" class="oy-btn" id="oyTekrar">Tekrar oyna</button><button type="button" class="oy-btn ikincil" id="oyKopya">Skoru kopyala</button></div>
-      <div class="tw"><table><thead><tr><th></th><th>Soru</th><th>Doğru cevap</th></tr></thead><tbody>${D.gecmis.map((g) => `<tr><td class="${g.dogru ? 'pos' : 'neg'}">${g.dogru ? '✓' : '✗'}</td><td style="white-space:normal">${esc(g.soru)}</td><td>${esc(g.cevap)} <span style="color:var(--mut)">(${esc(g.deger)})</span></td></tr>`).join('')}</tbody></table></div></div></div>`;
+      <div id="oyLider"></div><div class="tw"><table><thead><tr><th></th><th>Soru</th><th>Doğru cevap</th></tr></thead><tbody>${D.gecmis.map((g) => `<tr><td class="${g.dogru ? 'pos' : 'neg'}">${g.dogru ? '✓' : '✗'}</td><td style="white-space:normal">${esc(g.soru)}</td><td>${esc(g.cevap)} <span style="color:var(--mut)">(${esc(g.deger)})</span></td></tr>`).join('')}</tbody></table></div></div></div>`;
     bagla();
+    if (window.tjkUye && !D.kaydedildi) { D.kaydedildi = true; const k = D.kat, sk = D.skor; window.tjkUye.skorKaydet(k, sk).catch(console.error).finally(() => window.tjkUye.liderlik(k, document.getElementById('oyLider'))); }
+    else if (window.tjkUye) window.tjkUye.liderlik(D.kat, document.getElementById('oyLider'));
     document.getElementById('oyTekrar').addEventListener('click', yeniOyun);
     document.getElementById('oyKopya').addEventListener('click', (e) => {
       const metin = `O mu, bu mu? (${kat}) skorum: ${D.skor}/${TUR_SAYISI} ${D.gecmis.map((g) => (g.dogru ? '🟩' : '🟥')).join('')} ${location.href.split('#')[0]}#oyun`;
       navigator.clipboard.writeText(metin).then(() => { e.target.textContent = 'Kopyalandı'; }, () => { e.target.textContent = 'Kopyalanamadı'; });
     });
   }
-  function yeniOyun() { havuz(); Object.assign(D, {no: 0, skor: 0, seri: 0, enSeri: 0, cevaplandi: false, gecmis: [], kullanilan: new Set(), sonSoru: ''}); D.soru = yeniSoru(); ciz(); }
+  function yeniOyun() { havuz(); Object.assign(D, {no: 0, skor: 0, seri: 0, enSeri: 0, cevaplandi: false, gecmis: [], kullanilan: new Set(), sonSoru: '', kaydedildi: false}); D.soru = yeniSoru(); ciz(); }
 
   document.addEventListener('keydown', (e) => {
     if (!alan() || /INPUT|SELECT|TEXTAREA/.test(document.activeElement?.tagName || '')) return;

@@ -1,0 +1,22 @@
+rules_version = '2';
+// TJK istatistik sitesi — Firestore güvenlik kuralları.
+// Firebase konsolu → Firestore Database → Rules sekmesine yapıştırıp "Publish" deyin.
+service cloud.firestore {
+  match /databases/{db}/documents {
+    // her üye yalnızca kendi profilini (favori atlar) okuyup yazabilir
+    match /kullanicilar/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+    // liderlik tabloları herkese açık okunur; her üye yalnızca kendi satırını yazar
+    match /{koleksiyon}/{uid} {
+      allow read: if koleksiyon.matches('liderlik_[a-z]+');
+      allow write: if koleksiyon.matches('liderlik_[a-z]+')
+        && request.auth != null && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['ad', 'skor', 'tarih'])
+        && request.resource.data.skor is int
+        && request.resource.data.skor >= 0 && request.resource.data.skor <= 10
+        && request.resource.data.ad is string && request.resource.data.ad.size() <= 40
+        && request.resource.data.tarih is string && request.resource.data.tarih.size() == 10;
+    }
+  }
+}

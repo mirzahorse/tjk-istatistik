@@ -3,7 +3,12 @@ name: TJK verisini güncelle
 on:
   schedule:
     - cron: "17 * * * *"   # her saat (xx:17); GitHub saat başlarında yoğun olduğu için 17. dakika
-  workflow_dispatch:        # Actions sekmesinden elle de çalıştırılabilir
+  workflow_dispatch:        # Actions sekmesinden elle ya da dış zamanlayıcıyla (cron-job.org) çalıştırılır
+    inputs:
+      kaynak:
+        description: "elle | zamanlayici"
+        default: "elle"
+        required: false
 
 permissions:
   contents: write
@@ -30,7 +35,7 @@ jobs:
       - name: Sonuçları TJK'dan indir (bugün ve dün yenilenir)
         run: |
           # her saat yalnızca bugün ve dün; günde bir kez (06:17) ve elle çalıştırınca son 7 gün
-          if [ "$(date -u +%H)" = "03" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then GUN=7; else GUN=2; fi
+          if [ "$(date -u +%H)" = "03" ] || [ "${{ inputs.kaynak }}" = "elle" ]; then GUN=7; else GUN=2; fi
           python3 tjk_indir.py --klasor veri --gun $GUN
 
       - name: Sitenin veri dosyasını yeniden oluştur
@@ -50,10 +55,10 @@ jobs:
             echo "degisti=1" >> "$GITHUB_OUTPUT"
           fi
 
-  # Siteyi paketle (veri değiştiyse ya da elle çalıştırıldıysa)
+  # Siteyi paketle (veri değiştiyse ya da elle çalıştırıldıysa; zamanlayıcıda yalnızca veri değiştiyse)
   paketle:
     needs: guncelle
-    if: needs.guncelle.outputs.degisti == '1' || github.event_name == 'workflow_dispatch'
+    if: needs.guncelle.outputs.degisti == '1' || inputs.kaynak == 'elle'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5

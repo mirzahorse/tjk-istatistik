@@ -353,7 +353,7 @@ function atKarnesi() {
   let h = adaylar.length > 1 ? '<div class="chips">' + adaylar.slice(0, 20).map((k) => `<button class="chip${k === durum.atSec ? ' on' : ''}" data-at="${esc(k)}">${esc(k.split('|')[0])} <small>(${esc(k.split('|')[1])})</small></button>`).join('') + '</div>' : '';
   const L = rows.filter((r) => r.k === durum.atSec).sort((a, b) => (a.rc.tarih < b.rc.tarih ? -1 : 1));
   const [ad, baba, anne] = durum.atSec.split('|'), son = L[L.length - 1];
-  h += `<p class="d"><b>${esc(ad)}</b> · ${esc(son.yas)} yaşlı ${esc(son.renk.toLowerCase())} ${esc(son.cins.toLowerCase())} · ${esc(baba)} – ${esc(anne)} · Antrenör ${esc(son.antr)} · Sahip ${esc(son.sahip)}</p>`;
+  h += `<p class="d"><b>${esc(ad)}</b><span data-fav-alan="${esc(durum.atSec)}"></span> · ${esc(son.yas)} yaşlı ${esc(son.renk.toLowerCase())} ${esc(son.cins.toLowerCase())} · ${esc(baba)} – ${esc(anne)} · Antrenör ${esc(son.antr)} · Sahip ${esc(son.sahip)}</p>`;
   h += '<div class="tiles">' + kutu('Start', N(L.length)) + kutu('1.lik', N(L.filter((r) => r.w).length)) + kutu('İlk 3', N(L.filter((r) => r.i3).length)) + kutu('İkramiye (1.lik)', M(sum(L.filter((r) => r.w), (r) => r.rc.ikr))) + kutu('Son HP', son.hp ?? '—') + '</div>';
   const hpPts = L.filter((r) => r.hp != null).map((r) => ({x: tarih(r.rc.tarih).replace(' 2026', ''), y: r.hp}));
   const MB = (m) => (m <= 1200 ? '≤1200' : m <= 1600 ? '1300–1600' : m <= 2000 ? '1700–2000' : '2100+');
@@ -362,6 +362,7 @@ function atKarnesi() {
     kart('Pist ve mesafe uzmanlığı', '', tablo([['Pist · mesafe', (o) => o.k], ['Start', (o) => o.start, 1], ['1.lik', (o) => o.bir, 1], ['İlk 3', (o) => o.i3, 1]], uz)) + '</div>';
   h += kart('Koşuları', '', tablo([['Tarih', (r) => tarih(r.rc.tarih)], ['Hipodrom', (r) => r.rc.hip], ['Mesafe', (r) => N(r.rc.mes), 1], ['Pist', (r) => r.rc.pist], ['Sınıf', (r) => r.rc.sinif], ['Sıra', (r) => (r.derecesiz ? 'Derecesiz' : r.sira + '/' + r.rc.n), 1], ['Derece', (r) => derece(r.sn)], ['Jokey', (r) => r.jokey], ['Kilo', (r) => nf1.format(r.kilo), 1], ['Ganyan', (r) => (r.g ? nf2.format(r.g) : '—'), 1], ['HP', (r) => r.hp ?? '—', 1], ['Ekipman', (r) => r.ekip || '—']], [...L].reverse(), {tall: 1}));
   el.innerHTML = h;
+  if (window.tjkUye) window.tjkUye.favButon(durum.atSec, el.querySelector('[data-fav-alan]'));
   el.querySelectorAll('[data-at]').forEach((b) => b.addEventListener('click', () => { durum.atSec = b.dataset.at; atKarnesi(); }));
 }
 
@@ -495,5 +496,7 @@ ciz();
 </script>
 <script src="bot.js"></script>
 <script src="oyun.js"></script>
+<script src="firebase-config.js"></script>
+<script type="module" src="uye.js"></script>
 </body>
 </html>
