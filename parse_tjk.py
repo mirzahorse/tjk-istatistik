@@ -73,7 +73,11 @@ def duzelt(out, tarih, hip):
 def parse_file(path):
     ad = os.path.basename(path)[:-4]
     tarih, hip = ad.split("_", 1)
-    lines = open(path, encoding="utf-8-sig").read().splitlines()
+    ham = open(path, "rb").read()
+    try:
+        lines = ham.decode("utf-8-sig").splitlines()
+    except UnicodeDecodeError:   # birkaç eski dosya Windows-1254 kodlamalı
+        lines = ham.decode("cp1254").splitlines()
     gun_no = ""
     m = re.search(r"\((\d+)\. Yarış Günü\)", lines[0]) if lines else None
     if m:
