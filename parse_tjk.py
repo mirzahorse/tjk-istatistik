@@ -103,6 +103,8 @@ def parse_file(path):
             pm = re.match(r"1\.\)\s*([\d.]+)", ln)
             prize = int(pm[1].replace(".", "")) if pm else ""
             race["ikramiye_1"] = prize
+            # ilk 5 sıranın ikramiyesi (satırın sonundaki yetiştirici primleri hariç)
+            race["ikramiyeler"] = [int(x.replace(".", "")) for x in re.findall(r"\d\.\)\s*([\d.]+)\s*TL", ln)[:5]]
             continue
         if race and len(f) >= 15 and re.fullmatch(r"\d+", f[0].strip()) and re.match(r"^\d+y", f[2].strip()):
             toks = f[1].split()
@@ -147,6 +149,17 @@ def parse_file(path):
         r.setdefault("olu_yaris", False)
         onceki = r
     duzelt(out, tarih, hip)
+    # kazanç: sırasına düşen ikramiye; ölü yarışta paylaşılan sıraların ikramiyesi eşit bölünür
+    for k in {r["kosu_no"] for r in out}:
+        kosu = [r for r in out if r["kosu_no"] == k]
+        ikr = (kosu[0].get("ikramiyeler") or []) + [0] * 5
+        sayi = {}
+        for r in kosu:
+            if r["durum"] == "Derece aldı":
+                sayi[r["sira"]] = sayi.get(r["sira"], 0) + 1
+        for r in kosu:
+            n_ = sayi.get(r["sira"], 0) if r["durum"] == "Derece aldı" else 0
+            r["kazanc"] = round(sum(ikr[r["sira"] - 1 + j] for j in range(n_) if r["sira"] - 1 + j < 5) / n_) if n_ and r["sira"] <= 5 else 0
     # koşudaki at sayısı
     n = {}
     for r in out:

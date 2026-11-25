@@ -13,7 +13,7 @@ const rows = S.r.map((ri, i) => {
     rc, sira: Math.abs(s), derecesiz: s < 0, at: Dc.at[S.at[i]], baba: Dc.ba[S.ba[i]], anne: Dc.an[S.an[i]], yas: S.y[i], renk: Dc.rk[S.rk[i]],
     cins: Dc.c[S.c[i]], kilo: S.kg[i] / 10, fazla: S.fz[i] / 10, jokey: Dc.j[S.j[i]], ap: S.ap[i] === 1, sahip: Dc.sh[S.sh[i]], antr: Dc.tr[S.an2[i]],
     st: S.st[i], ds: S.ds[i] === 1, agf: S.agf[i], hp: S.hp[i] < 0 ? null : S.hp[i], sn: S.sn[i] < 0 ? null : S.sn[i] / 100,
-    g: S.g[i] < 0 ? null : S.g[i] / 100, fark: Dc.f[S.f[i]], ekip: Dc.e[S.e[i]], yeni: Dc.e[S.ye[i]], ara: S.ara[i]
+    g: S.g[i] < 0 ? null : S.g[i] / 100, kz: S.kz ? S.kz[i] : 0, fark: Dc.f[S.f[i]], ekip: Dc.e[S.e[i]], yeni: Dc.e[S.ye[i]], ara: S.ara[i]
   };
 });
 for (const r of rows) { r.k = r.at + '|' + r.baba + '|' + r.anne; r.w = r.sira === 1; r.i3 = r.sira <= 3 && !r.derecesiz; }
@@ -33,14 +33,14 @@ const pct = (w, s) => (s ? 100 * w / s : 0);
 const sum = (a, f) => a.reduce((t, x) => t + f(x), 0);
 
 // ---------- istatistik yardımcıları ----------
-// grup: {start, bir, i3, ikr, oyn (ganyanlı start), don (kazananların ganyan toplamı)}
+// grup: {start, bir, i3, ikr (toplam kazanç: ilk 5 ikramiyeleri), oyn (ganyanlı start), don (kazananların ganyan toplamı)}
 function grupla(list, keyf) {
   const m = new Map();
   for (const r of list) {
     const k = keyf(r); if (k == null || k === '') continue;
     let o = m.get(k); if (!o) { o = {k, start: 0, bir: 0, i3: 0, ikr: 0, oyn: 0, don: 0, atlar: new Set(), kazAt: new Set()}; m.set(k, o); }
-    o.start++; o.atlar.add(r.k);
-    if (r.w) { o.bir++; o.ikr += r.rc.ikr; o.kazAt.add(r.k); }
+    o.start++; o.atlar.add(r.k); o.ikr += r.kz;
+    if (r.w) { o.bir++; o.kazAt.add(r.k); }
     if (r.i3) o.i3++;
     if (r.g > 0) { o.oyn++; if (r.w) o.don += r.g; }
   }
@@ -205,9 +205,9 @@ function apranti() {
 function genel(L) {
   const atW = new Map();
   for (const r of L) atW.set(r.k, (atW.get(r.k) || false) || r.w);
-  const fav = L.filter((r) => r.fav), ikr = sum(L.filter((r) => r.w), (r) => r.rc.ikr);
+  const fav = L.filter((r) => r.fav), ikr = sum(L, (r) => r.kz);
   let h = '<div class="tiles">' + kutu('Koşu', N(new Set(L.map((r) => r.rc.i)).size)) + kutu('Koşan at', N(atW.size)) +
-    kutu('Favori kazanma', P(pct(fav.filter((r) => r.w).length, fav.length))) + kutu('Dağıtılan 1.lik ikramiyesi', M(ikr)) + '</div>';
+    kutu('Favori kazanma', P(pct(fav.filter((r) => r.w).length, fav.length))) + kutu('Dağıtılan ikramiye', M(ikr)) + '</div>';
   h += '<section class="card pist" id="pist" aria-label="Sezonun önündekiler"></section>';
   h += apranti();
   const ay = new Map(); for (const r of L) { const k = r.rc.tarih.slice(0, 7); if (!ay.has(k)) ay.set(k, new Set()); ay.get(k).add(r.rc.i); }
@@ -240,7 +240,7 @@ function atlar(L) {
   const seri = [...seq.values()].filter((o) => o.seri >= 2).sort((a, b) => b.seri - a.seri).slice(0, 15);
   const kuraklik = [...seq.values()].filter((o) => o.kazandi && o.sonraki > 0).sort((a, b) => b.sonraki - a.sonraki).slice(0, 15);
   const hic = g.filter((o) => o.bir === 0).sort((a, b) => b.start - a.start).slice(0, 15);
-  h += '<div class="grid">' + kart('En çok kazanan atlar', '', tablo([['At', ad], ['Baba', baba], ['1.lik', (o) => o.bir, 1], ['Start', (o) => o.start, 1], ['İkramiye', (o) => M(o.ikr), 1]], kaz)) +
+  h += '<div class="grid">' + kart('En çok kazanan atlar', '', tablo([['At', ad], ['Baba', baba], ['1.lik', (o) => o.bir, 1], ['Start', (o) => o.start, 1], ['Kazanç', (o) => M(o.ikr), 1]], kaz)) +
     kart('Handikap puanı en çok artan atlar', 'İlk ve son koşusundaki HP farkı (en az 3 koşu).', tablo([['At', (o) => o.k.split('|')[0]], ['İlk HP', (o) => o.ilk, 1], ['Son HP', (o) => o.son, 1], ['Artış', (o) => '+' + o.fark, 1, () => 'pos']], hpArt)) + '</div>';
   h += '<div class="grid">' + kart('Seri yapanlar', 'Son koşularını üst üste kazanan atlar.', tablo([['At', (o) => o.k.split('|')[0]], ['Üst üste galibiyet', (o) => o.seri, 1], ['Son koşu', (o) => tarih(o.son)]], seri, {bos: 'Şu an 2+ galibiyet serisi olan at yok.'})) +
     kart('Galibiyetten uzaklaşanlar', 'Daha önce kazanmış ama son galibiyetinden beri en çok koşan atlar.', tablo([['At', (o) => o.k.split('|')[0]], ['Galibiyetsiz koşu', (o) => o.sonraki, 1], ['Son koşu', (o) => tarih(o.son)]], kuraklik)) + '</div>';
@@ -258,7 +258,7 @@ function atKarnesi() {
   const L = rows.filter((r) => r.k === durum.atSec).sort((a, b) => (a.rc.tarih < b.rc.tarih ? -1 : 1));
   const [ad, baba, anne] = durum.atSec.split('|'), son = L[L.length - 1];
   h += `<p class="d"><b>${esc(ad)}</b><span data-fav-alan="${esc(durum.atSec)}"></span> · ${esc(son.yas)} yaşlı ${esc(son.renk.toLowerCase())} ${esc(son.cins.toLowerCase())} · ${esc(baba)} – ${esc(anne)} · Antrenör ${esc(son.antr)} · Sahip ${esc(son.sahip)}</p>`;
-  h += '<div class="tiles">' + kutu('Start', N(L.length)) + kutu('1.lik', N(L.filter((r) => r.w).length)) + kutu('İlk 3', N(L.filter((r) => r.i3).length)) + kutu('İkramiye (1.lik)', M(sum(L.filter((r) => r.w), (r) => r.rc.ikr))) + kutu('Son HP', son.hp ?? '—') + '</div>';
+  h += '<div class="tiles">' + kutu('Start', N(L.length)) + kutu('1.lik', N(L.filter((r) => r.w).length)) + kutu('İlk 3', N(L.filter((r) => r.i3).length)) + kutu('Kazanç', M(sum(L, (r) => r.kz))) + kutu('Son HP', son.hp ?? '—') + '</div>';
   const hpPts = L.filter((r) => r.hp != null).map((r) => ({x: tarih(r.rc.tarih).replace(' 2026', ''), y: r.hp}));
   const MB = (m) => (m <= 1200 ? '≤1200' : m <= 1600 ? '1300–1600' : m <= 2000 ? '1700–2000' : '2100+');
   const uz = grupla(L, (r) => r.rc.pist + ' · ' + MB(r.rc.mes)).sort((a, b) => b.start - a.start);
@@ -276,10 +276,10 @@ function siralama(L, alan, olcut, id, baslik, kimAd) {
   if (olcut === 'yuzde') g = g.filter((o) => o.start >= 30).sort((a, b) => b.yuzde - a.yuzde);
   else if (olcut === 'ikr') g.sort((a, b) => b.ikr - a.ikr);
   else g.sort((a, b) => b.bir - a.bir || a.start - b.start);
-  const sec = `<select id="${id}">${[['bir', 'Birincilik sayısı'], ['yuzde', 'Kazanma yüzdesi'], ['ikr', 'İkramiye']].map(([v, t]) => `<option value="${v}"${v === olcut ? ' selected' : ''}>${t}</option>`).join('')}</select>`;
+  const sec = `<select id="${id}">${[['bir', 'Birincilik sayısı'], ['yuzde', 'Kazanma yüzdesi'], ['ikr', 'Kazanç']].map(([v, t]) => `<option value="${v}"${v === olcut ? ' selected' : ''}>${t}</option>`).join('')}</select>`;
   return kart(baslik, olcut === 'yuzde' ? 'En az 30 kez koşanlar arasında.' : '',
     `<div class="ctl"><label>Sırala${sec}</label></div>` +
-    tablo([['#', (o, i) => i + 1, 1], [kimAd, (o) => o.k], ['1.lik', (o) => o.bir, 1], ['İlk 3', (o) => o.i3, 1], ['Start', (o) => o.start, 1], ['Kazanma', (o) => P(o.yuzde), 1], ['İkramiye', (o) => M(o.ikr), 1]], g.slice(0, 20)));
+    tablo([['#', (o, i) => i + 1, 1], [kimAd, (o) => o.k], ['1.lik', (o) => o.bir, 1], ['İlk 3', (o) => o.i3, 1], ['Start', (o) => o.start, 1], ['Kazanma', (o) => P(o.yuzde), 1], ['Kazanç', (o) => M(o.ikr), 1]], g.slice(0, 20)));
 }
 function jokeyler(L) {
   let h = siralama(L, (r) => r.jokey, durum.olcutJ, 's_olcutJ', 'Jokey sıralaması', 'Jokey');
@@ -295,7 +295,7 @@ function antrenorler(L) {
   const ik = grupla(L, (r) => r.antr + ' + ' + r.jokey).filter((o) => o.bir >= 3).sort((a, b) => b.bir - a.bir || b.yuzde - a.yuzde).slice(0, 15);
   const sh = grupla(L, (r) => r.sahip).sort((a, b) => b.bir - a.bir || a.start - b.start).slice(0, 15);
   h += '<div class="grid">' + kart('En çok birlikte kazanan antrenör ve jokeyler', '', tablo([['İkili', (o) => o.k], ['1.lik', (o) => o.bir, 1], ['Start', (o) => o.start, 1], ['Kazanma', (o) => P(o.yuzde), 1]], ik)) +
-    kart('Sahip sıralaması', 'En çok birincilik alan at sahipleri.', tablo([['#', (o, i) => i + 1, 1], ['Sahip', (o) => o.k], ['1.lik', (o) => o.bir, 1], ['Start', (o) => o.start, 1], ['İkramiye', (o) => M(o.ikr), 1]], sh)) + '</div>';
+    kart('Sahip sıralaması', 'En çok birincilik alan at sahipleri.', tablo([['#', (o, i) => i + 1, 1], ['Sahip', (o) => o.k], ['1.lik', (o) => o.bir, 1], ['Start', (o) => o.start, 1], ['Kazanç', (o) => M(o.ikr), 1]], sh)) + '</div>';
   h += kart('Antrenör ara', 'Adını yazın; hipodromlara göre sonuçları çıksın.', `<div class="ctl"><label>Antrenör<input id="kisiAra" value="${esc(durum.kisiAra)}" placeholder="ör. M.ÖZGÜL"></label></div><div id="kisiSonuc"></div>`);
   return h;
 }
@@ -313,7 +313,7 @@ function kisiKarnesi() {
 function yetis(L) {
   const g = grupla(L, (r) => r.baba).sort((a, b) => b.bir - a.bir).slice(0, 20);
   const iki = new Map(); for (const r of L) if (r.yas === 2 && r.w) iki.set(r.baba, (iki.get(r.baba) || 0) + 1);
-  let h = kart('Aygır sıralaması', 'Tayların toplam başarısına göre.', tablo([['#', (o, i) => i + 1, 1], ['Aygır', (o) => o.k], ['Kazanan tay', (o) => o.kazAt.size, 1], ['1.lik', (o) => o.bir, 1], ['Start', (o) => o.start, 1], ['Kazanma', (o) => P(o.yuzde), 1], ['İkramiye', (o) => M(o.ikr), 1]], g));
+  let h = kart('Aygır sıralaması', 'Tayların toplam başarısına göre.', tablo([['#', (o, i) => i + 1, 1], ['Aygır', (o) => o.k], ['Kazanan tay', (o) => o.kazAt.size, 1], ['1.lik', (o) => o.bir, 1], ['Start', (o) => o.start, 1], ['Kazanma', (o) => P(o.yuzde), 1], ['Kazanç', (o) => M(o.ikr), 1]], g));
   h += '<div class="grid">' + kart('Aygır ara', 'Taylarının pist ve mesafeye göre başarısı.', `<div class="ctl"><label>Aygır (baba)<input id="aygirAra" value="${esc(durum.aygirAra)}" placeholder="ör. APPROVE"></label></div><div id="aygirSonuc"></div>`) +
     kart('Kısrak ara', 'Aynı anneden gelen atlar.', `<div class="ctl"><label>Kısrak (anne)<input id="kisrakAra" value="${esc(durum.kisrakAra)}" placeholder="ör. COPY CAT"></label></div><div id="kisrakSonuc"></div>`) + '</div>';
   return h;
@@ -328,14 +328,14 @@ function aygirKarnesi() {
   const taylar = grupla(L, (r) => r.k).sort((a, b) => b.bir - a.bir || b.i3 - a.i3).slice(0, 10);
   el.innerHTML = `<p class="d">${N(new Set(L.map((r) => r.baba)).size)} aygır eşleşti · ${N(new Set(L.map((r) => r.k)).size)} tay · ${N(L.length)} start</p>` +
     tablo([['Pist · mesafe', (o) => o.k], ['Start', (o) => o.start, 1], ['1.lik', (o) => o.bir, 1], ['Kazanma', (o) => P(o.yuzde), 1]], pm) +
-    '<p class="d" style="margin-top:12px">En başarılı tayları</p>' + tablo([['At', (o) => o.k.split('|')[0]], ['1.lik', (o) => o.bir, 1], ['Start', (o) => o.start, 1], ['İkramiye', (o) => M(o.ikr), 1]], taylar);
+    '<p class="d" style="margin-top:12px">En başarılı tayları</p>' + tablo([['At', (o) => o.k.split('|')[0]], ['1.lik', (o) => o.bir, 1], ['Start', (o) => o.start, 1], ['Kazanç', (o) => M(o.ikr), 1]], taylar);
 }
 function kisrakKarnesi() {
   const el = $('kisrakSonuc'); if (!el) return;
   const q = U(durum.kisrakAra); if (!q) { el.innerHTML = ''; return; }
   const L = rows.filter((r) => r.anne.includes(q));
   const g = grupla(L, (r) => r.k).sort((a, b) => b.bir - a.bir || b.i3 - a.i3);
-  el.innerHTML = g.length ? `<p class="d">Yılın tamamı, filtrelerden bağımsız.</p>` + tablo([['At', (o) => o.k.split('|')[0]], ['Baba', (o) => o.k.split('|')[1]], ['Anne', (o) => o.k.split('|')[2]], ['Start', (o) => o.start, 1], ['1.lik', (o) => o.bir, 1], ['İlk 3', (o) => o.i3, 1], ['İkramiye', (o) => M(o.ikr), 1]], g) : '<div class="empty">2026\'da koşan tayı bulunamadı.</div>';
+  el.innerHTML = g.length ? `<p class="d">Yılın tamamı, filtrelerden bağımsız.</p>` + tablo([['At', (o) => o.k.split('|')[0]], ['Baba', (o) => o.k.split('|')[1]], ['Anne', (o) => o.k.split('|')[2]], ['Start', (o) => o.start, 1], ['1.lik', (o) => o.bir, 1], ['İlk 3', (o) => o.i3, 1], ['Kazanç', (o) => M(o.ikr), 1]], g) : '<div class="empty">2026\'da koşan tayı bulunamadı.</div>';
 }
 
 function kosul(L) {
@@ -432,6 +432,6 @@ function pist() {
   if (pistIlk && !azalt) requestAnimationFrame(() => requestAnimationFrame(() => $('pist').querySelectorAll('.at').forEach((a) => { a.style.width = a.dataset.w + '%'; })));
   pistIlk = false;
 }
-$('dipnot').textContent = `Kaynak: TJK resmi sonuçları. Son yarış günü: ${tarih(RAW.son)}. İkramiye yalnızca birincilik ikramiyesidir.`;
+$('dipnot').textContent = `Kaynak: TJK resmi sonuçları. Son yarış günü: ${tarih(RAW.son)}. Kazanç: ilk 5 sıraya verilen ikramiyelerin toplamı (yetiştirici primi hariç).`;
 let h0 = location.hash.slice(1); if (h0 === 'insan') h0 = 'jokey'; if (['genel', 'akis', 'atlar', 'jokey', 'antr', 'yetis', 'kosul', 'sonuc', 'tum', 'oneri'].includes(h0)) { sekme = h0; document.querySelectorAll('#sekmeler button').forEach((x) => x.classList.toggle('on', x.dataset.tab === h0)); }
 ciz();

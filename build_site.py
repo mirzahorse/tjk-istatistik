@@ -119,7 +119,7 @@ def main():
         return d["idx"][val]
 
     races, ridx = {k: [] for k in ["t", "h", "no", "ad", "sn", "tur", "irk", "m", "p", "rek", "ikr", "saat", "n"]}, {}
-    S = {k: [] for k in ["r", "s", "at", "ba", "an", "y", "rk", "c", "kg", "fz", "j", "ap", "sh", "an2",
+    S = {k: [] for k in ["kz", "r", "s", "at", "ba", "an", "y", "rk", "c", "kg", "fz", "j", "ap", "sh", "an2",
                          "st", "ds", "agf", "hp", "sn", "g", "f", "e", "ye", "ara"]}
     for r in rows:
         rk = (r["tarih"], r["hipodrom"], r["kosu_no"])
@@ -139,6 +139,7 @@ def main():
             races["saat"].append(code("saat", r["saat"]))
             races["n"].append(r["kosan_sayisi"])
         S["r"].append(ridx[rk])
+        S["kz"].append(r.get("kazanc", 0))
         S["s"].append(r["sira"] if r["durum"] == "Derece aldı" else -r["sira"])  # eksi: derecesiz
         S["at"].append(code("at", r["at"]))
         S["ba"].append(code("ba", r["baba"]))

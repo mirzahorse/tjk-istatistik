@@ -99,10 +99,10 @@
   function atKarneKey(k) {
     const L = rows.filter((r) => r.k === k).sort((a, b) => (a.rc.tarih < b.rc.tarih ? -1 : 1));
     const [ad, baba, anne] = k.split('|'), s = L[L.length - 1], w = L.filter((r) => r.w);
-    const ikr = w.reduce((t, r) => t + r.rc.ikr, 0);
+    const ikr = L.reduce((t, r) => t + r.kz, 0);
     const MB = (m) => (m <= 1200 ? '1200 m ve altı' : m <= 1600 ? '1300–1600 m' : m <= 2000 ? '1700–2000 m' : '2100 m+');
     const en = grupla(L, (r) => r.rc.pist + ' ' + MB(r.rc.mes)).filter((o) => o.start >= 2).sort((a, b) => b.yuzde - a.yuzde || b.i3 - a.i3)[0];
-    let t = `${ad} (${baba} – ${anne}), ${s.yas} yaşlı ${s.renk.toLowerCase()} ${s.cins.toLowerCase()}. 2026'da ${L.length} kez koştu: ${w.length} birincilik, ${L.filter((r) => r.i3).length} kez ilk üç. Kazandığı 1.lik ikramiyesi ${M(ikr)}.`;
+    let t = `${ad} (${baba} – ${anne}), ${s.yas} yaşlı ${s.renk.toLowerCase()} ${s.cins.toLowerCase()}. 2026'da ${L.length} kez koştu: ${w.length} birincilik, ${L.filter((r) => r.i3).length} kez ilk üç. Kazandığı toplam kazancı ${M(ikr)}.`;
     if (s.hp != null) t += ` Son handikap puanı ${s.hp}.`;
     if (en && en.bir) t += ` En başarılı olduğu yer: ${en.k} (${en.start} koşuda ${en.bir} birincilik).`;
     t += ` Antrenörü ${s.antr}, sahibi ${s.sahip}.`;
@@ -116,11 +116,11 @@
     const o = grupla(L, () => 'x')[0];
     if (tur === 'baba' || tur === 'anne') {
       const taylar = grupla(L, (r) => r.k).sort((a, b) => b.bir - a.bir || b.i3 - a.i3);
-      const t = `${ad} ${TURAD[tur] === 'aygır' ? 'aygırının' : 'kısrağının'} tayları (${filtreYazi(f)}): ${taylar.length} tay, ${o.start} start, ${o.bir} birincilik (%${nf1.format(o.yuzde)}), ${o.kazAt.size} farklı tay kazandı. Toplam 1.lik ikramiyesi ${M(o.ikr)}.`;
-      return {t, alt: 'En başarılı tayları', h: tablo([['At', (x) => x.k.split('|')[0]], [tur === 'baba' ? 'Anne' : 'Baba', (x) => x.k.split('|')[tur === 'baba' ? 2 : 1]], ['1.lik', (x) => x.bir, 1], ['Start', (x) => x.start, 1], ['İkr.', (x) => M(x.ikr), 1]], taylar.slice(0, 8))};
+      const t = `${ad} ${TURAD[tur] === 'aygır' ? 'aygırının' : 'kısrağının'} tayları (${filtreYazi(f)}): ${taylar.length} tay, ${o.start} start, ${o.bir} birincilik (%${nf1.format(o.yuzde)}), ${o.kazAt.size} farklı tay kazandı. Toplam toplam ikramiye ${M(o.ikr)}.`;
+      return {t, alt: 'En başarılı tayları', h: tablo([['At', (x) => x.k.split('|')[0]], [tur === 'baba' ? 'Anne' : 'Baba', (x) => x.k.split('|')[tur === 'baba' ? 2 : 1]], ['1.lik', (x) => x.bir, 1], ['Start', (x) => x.start, 1], ['Kazanç', (x) => M(x.ikr), 1]], taylar.slice(0, 8))};
     }
     const hip = grupla(L, (r) => r.rc.hip).sort((a, b) => b.bir - a.bir || b.start - a.start);
-    let t = `${ad} (${TURAD[tur]}, ${filtreYazi(f)}): ${o.start} start, ${o.bir} birincilik, ${o.i3} kez ilk üç. Kazanma oranı %${nf1.format(o.yuzde)}, kazandırdığı 1.lik ikramiyesi ${M(o.ikr)}.`;
+    let t = `${ad} (${TURAD[tur]}, ${filtreYazi(f)}): ${o.start} start, ${o.bir} birincilik, ${o.i3} kez ilk üç. Kazanma oranı %${nf1.format(o.yuzde)}, kazandırdığı toplam ikramiye ${M(o.ikr)}.`;
     if (o.oyn) t += ` Her starta 1 TL ganyan oynansaydı ${o.kar >= 0 ? nf2.format(o.kar) + ' TL kâr' : nf2.format(-o.kar) + ' TL zarar'} edilirdi.`;
     if (hip.length > 1 && hip[0].bir) t += ` En çok kazandığı hipodrom ${hip[0].k} (${hip[0].bir}).`;
     return {t, alt: 'Hipodromlara göre', h: tablo([['Hipodrom', (x) => x.k], ['Start', (x) => x.start, 1], ['1.lik', (x) => x.bir, 1], ['Kazanma', (x) => P(x.yuzde), 1]], hip)};
@@ -133,7 +133,7 @@
       return {t: `Hiç kazanamadan en çok koşan atlar (${filtreYazi(f)}):`, h: tablo([['At', (o) => o.k.split('|')[0]], ['Start', (o) => o.start, 1], ['İlk 3', (o) => o.i3, 1]], g)};
     }
     if (var_(q, 'YUZDE', 'ORAN', 'ISABET', 'VERIM')) { olcut = 'kazanma oranı (en az 20 start)'; g = g.filter((o) => o.start >= 20).sort((a, b) => b.yuzde - a.yuzde); }
-    else if (var_(q, 'IKRAMIYE', 'PARA', 'KAZANC')) { olcut = '1.lik ikramiyesi'; g.sort((a, b) => b.ikr - a.ikr); }
+    else if (var_(q, 'IKRAMIYE', 'PARA', 'KAZANC')) { olcut = 'kazanç'; g.sort((a, b) => b.ikr - a.ikr); }
     else if (var_(q, 'ZARAR', 'KAYBETTIR')) { olcut = '1 TL ganyanla en çok zarar ettiren (en az 30 start)'; g = g.filter((o) => o.oyn >= 30).sort((a, b) => a.kar - b.kar); }
     else if (var_(q, 'KARLI', 'KAR ', 'KAZANDIR', 'GANYAN')) { olcut = '1 TL ganyanla en kârlı (en az 30 start)'; g = g.filter((o) => o.oyn >= 30).sort((a, b) => b.kar - a.kar); }
     else g.sort((a, b) => b.bir - a.bir || a.start - b.start);
