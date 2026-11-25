@@ -24,7 +24,7 @@
     const min = S.min ?? MIN_VARS[S.kat];
     let L = [];
     for (const [ad, , yl] of D.k) {
-      if (q && !fold(ad.split('|')[0]).includes(q)) continue;
+      if (q && !fold(ad.split('|')[0]).includes(q) && !(window.adEslesir && window.adEslesir(ad.split('|')[0], q))) continue;
       const t = [0, 0, 0, 0, 0, 0]; let ilk = 0, son = 0;
       for (const x of yl) {
         if (x[0] < bas || x[0] > bit) continue;

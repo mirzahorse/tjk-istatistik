@@ -29,6 +29,18 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&': '&amp;', '<
 const tarih = (s) => { const [y, m, d] = s.split('-'); return `${+d} ${AY[+m - 1]} ${y}`; };
 const derece = (sn) => { if (sn == null) return '—'; const m = Math.floor(sn / 60), s = sn - m * 60; return `${m}.${s.toFixed(2).padStart(5, '0')}`; };
 const U = (s) => String(s || '').toLocaleUpperCase('tr').trim();
+// TJK isimleri kısaltmalı tutar (B.AKÇAY, M.M.BİLGİN, SAL.ÇELİK): "Burak Akçay" yazınca da bulunsun
+function adEslesir(kisa, sorgu) {
+  const A = U(kisa).replace(/\s+/g, ' '), q = U(sorgu).replace(/\s+/g, ' ');
+  if (!q) return false;
+  if (A.includes(q)) return true;
+  const k = q.split(' '); if (k.length < 2) return false;
+  const p = A.split('.').map((x) => x.trim()).filter(Boolean); if (p.length < 2) return false;
+  const soy = p[p.length - 1], bas = p.slice(0, -1), adlar = k.slice(0, -1), sq = k[k.length - 1];
+  if (!(soy.startsWith(sq) || sq.startsWith(soy))) return false;
+  return bas.length <= adlar.length && bas.every((b, i) => adlar[i].startsWith(b));
+}
+window.adEslesir = adEslesir;
 const pct = (w, s) => (s ? 100 * w / s : 0);
 const sum = (a, f) => a.reduce((t, x) => t + f(x), 0);
 
@@ -303,7 +315,7 @@ function kisiKarnesi() {
   const el = $('kisiSonuc'); if (!el) return;
   const q = U(durum.kisiAra); if (!q) { el.innerHTML = ''; return; }
   const jokey = sekme === 'jokey', alan = jokey ? (r) => r.jokey : (r) => r.antr;
-  const L = suzulmus().filter((r) => alan(r).includes(q));
+  const L = suzulmus().filter((r) => adEslesir(alan(r), q));
   const adlar = [...new Set(L.map(alan))];
   const kol = [['Hipodrom', (o) => o.k], ['Start', (o) => o.start, 1], ['1.lik', (o) => o.bir, 1], ['Kazanma', (o) => P(o.yuzde), 1]];
   el.innerHTML = (adlar.length > 1 ? `<p class="d">${adlar.length} isim eşleşti: ${esc(adlar.slice(0, 8).join(', '))}${adlar.length > 8 ? '…' : ''}. Daha uzun yazarak daraltabilirsiniz.</p>` : '') +

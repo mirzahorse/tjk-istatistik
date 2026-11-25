@@ -180,7 +180,7 @@
     q = katla(q); if (q.length < 2) return [];
     const L = [];
     for (const t of SIRA) for (const [ad, liste] of DIZIN[t]) {
-      const A = katla(ad), i = A.indexOf(q); if (i < 0) continue;
+      const A = katla(ad); let i = A.indexOf(q); if (i < 0) { if (!(t === 'jokey' || t === 'antr') || !adEslesir(ad, q)) continue; i = 0; }
       L.push({ad, tur: t, n: liste.length, puan: (A === q ? -1 : i === 0 ? 0 : 1), alt: t === 'at' ? liste[0].baba : ''});
     }
     return L.sort((a, b) => a.puan - b.puan || b.n - a.n).slice(0, 12);
