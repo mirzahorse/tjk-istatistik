@@ -106,7 +106,7 @@
     const varMi = new Set(D.satirlar.map((s) => s.aciklama));
     const kayitlar = Object.entries(depo()).sort((a, b) => b[1].z - a[1].z).slice(0, 20);
     alan.innerHTML = `<section class="card">
-      <h2>Akış listesi</h2>
+      <h2>Akış hazırlama</h2>
       <p class="d">Şablonu ve tarihi seçin. Sağdaki önerilerden istediklerinizi ekleyin, hücrelere tıklayıp düzenleyin, sonra yazdırın ya da PDF kaydedin. Akış bu tarayıcıda kendiliğinden saklanır.</p>
       <div class="ctl akis-ctl">
         <label>Şablon<select id="akSablon">${Object.entries(SABLON).map(([k, v]) => `<option value="${k}"${k === D.sablon ? ' selected' : ''}>${v.ad}</option>`).join('')}</select></label>
