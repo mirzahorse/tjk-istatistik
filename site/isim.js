@@ -201,9 +201,10 @@
     giris.addEventListener('keydown', (e) => {
       const d = araKutu.querySelectorAll('button');
       if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); if (!d.length) return; secili = (secili + (e.key === 'ArrowDown' ? 1 : -1) + d.length) % d.length; d.forEach((b, i) => b.classList.toggle('sec', i === secili)); d[secili].scrollIntoView({block: 'nearest'}); }
-      else if (e.key === 'Enter') { e.preventDefault(); sec(secili >= 0 ? secili : 0); }
+      else if (e.key === 'Enter') { e.preventDefault(); clearTimeout(t); if (secili < 0) goster(); sec(secili >= 0 ? secili : 0); }
       else if (e.key === 'Escape') { kapa(); }
     });
+    document.getElementById('araDugme')?.addEventListener('click', () => { clearTimeout(t); goster(); if (sonuc.length) sec(0); else giris.focus(); });
     araKutu.addEventListener('click', (e) => { const b = e.target.closest('button[data-i]'); if (b) sec(+b.dataset.i); });
     document.addEventListener('click', (e) => { if (!e.target.closest('.ara-araKutu')) kapa(); });
   }

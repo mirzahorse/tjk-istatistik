@@ -75,6 +75,8 @@ jobs:
           python3 build_site.py veri site
           python3 build_kariyer.py veri ozet site
           python3 sifrele.py site
+          # sürüm etiketi: tarayıcı önbelleği eski dosyaları kullanmasın
+          sed -i "s/__SURUM__/${GITHUB_SHA::8}-${GITHUB_RUN_ID}/g" site/index.html site/giris.js
           # şifresiz veri yayına gitmesin
           test -s site/data.enc && test -s site/anahtar.bin && test ! -e site/data.js && ! ls site/kariyer/*.json >/dev/null 2>&1
       - uses: actions/configure-pages@v5

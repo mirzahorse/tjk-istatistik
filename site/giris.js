@@ -4,6 +4,7 @@
 // Şifre hiçbir yere gönderilmez; çözme tamamen tarayıcıda yapılır.
 (() => {
   const SAKLA = 'tjk_ozel_v2';
+  const SURUM = '__SURUM__';   // yayında commit kimliğiyle değişir: tarayıcı eski dosyayı kullanmasın
   const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
   const enc = new TextEncoder(), dec = new TextDecoder();
   const kucuk = (s) => String(s || '').trim().toLocaleLowerCase('tr');
@@ -42,7 +43,7 @@
     return new Promise((ok, hata) => {
       const s = document.createElement('script');
       if (modul) s.type = 'module'; else s.async = false;
-      s.src = src; s.onload = ok; s.onerror = () => hata(new Error(src));
+      s.src = src + (src.includes('?') ? '&' : '?') + 'v=' + SURUM; s.onload = ok; s.onerror = () => hata(new Error(src));
       document.body.appendChild(s);
     });
   }
