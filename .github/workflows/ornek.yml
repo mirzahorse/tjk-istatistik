@@ -1,0 +1,19 @@
+name: Örnek dosya indir (biçim kontrolü)
+on:
+  workflow_dispatch:
+    inputs:
+      yil:
+        description: "Yıl"
+        default: "2021"
+permissions:
+  contents: read
+jobs:
+  ornek:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: python3 tjk_indir.py --yil ${{ inputs.yil }} --ornek --klasor /tmp/ornek || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ornek-${{ inputs.yil }}
+          path: /tmp/ornek
