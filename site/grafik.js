@@ -495,7 +495,7 @@
   // ---------- düğmeler ----------
   function dugmeEkle() {
     document.querySelectorAll('#icerik section.card, #icerik .tiles').forEach((kart) => {
-      if (kart.querySelector(':scope > .png-btn') || !kaynaklar(kart).length) return;
+      if (kart.closest('#akisAlan') || kart.querySelector(':scope > .png-btn') || !kaynaklar(kart).length) return;
       const b = document.createElement('button');
       b.type = 'button'; b.className = 'png-btn'; b.textContent = 'PNG'; b.title = 'Grafik olarak indir';
       b.addEventListener('click', () => ac(kart));

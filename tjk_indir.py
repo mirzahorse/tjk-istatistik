@@ -26,9 +26,9 @@ ESZAMANLI = 3      # aynı anda en fazla 3 istek: TJK sunucusunu yormamak için
 BEKLEME = 0.2      # her istekten sonra saniye
 
 
-def url(gun, sehir):
-    yol = (f"/raporftp/TJKPDF/{gun:%Y}/{gun:%Y-%m-%d}/CSV/GunlukYarisSonuclari/"
-           f"{gun:%d.%m.%Y}-{sehir}-GunlukYarisSonuclari-TR.csv")
+def url(gun, sehir, tur="GunlukYarisSonuclari"):
+    yol = (f"/raporftp/TJKPDF/{gun:%Y}/{gun:%Y-%m-%d}/CSV/{tur}/"
+           f"{gun:%d.%m.%Y}-{sehir}-{tur}-TR.csv")
     return "https://medya-cdn.tjk.org" + urllib.parse.quote(yol)
 
 
@@ -64,11 +64,35 @@ def indir(klasor, gun, sehir, zorla=False):
     return "hata"
 
 
+def program_indir(klasor, bugun):
+    """Önümüzdeki günlerin koşu programı (deklare edilmiş koşular). Eski günler silinir."""
+    os.makedirs(klasor, exist_ok=True)
+    for f in os.listdir(klasor):
+        if f[:10] < (bugun - dt.timedelta(days=1)).isoformat():
+            os.remove(os.path.join(klasor, f))
+    n = 0
+    for d in range(0, 4):
+        gun = bugun + dt.timedelta(days=d)
+        for sehir in HIPODROMLAR:
+            hedef = os.path.join(klasor, f"{gun:%Y-%m-%d}_{sehir}.csv")
+            r = subprocess.run(["curl", "-sS", "-L", "--max-time", "30", "-A", "Mozilla/5.0", "-o", hedef + ".part", "-w", "%{http_code}",
+                                url(gun, sehir, "GunlukYarisProgrami")], capture_output=True, text=True)
+            time.sleep(BEKLEME)
+            ok = r.stdout.strip() == "200" and os.path.exists(hedef + ".part") and os.path.getsize(hedef + ".part") > 200 \
+                and b"<html" not in open(hedef + ".part", "rb").read(300).lower()
+            if ok:
+                os.replace(hedef + ".part", hedef); n += 1
+            elif os.path.exists(hedef + ".part"):
+                os.remove(hedef + ".part")
+    print(f"program: {n} dosya", flush=True)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--klasor", default="veri")
     ap.add_argument("--gun", type=int, default=0, help="yalnızca son N günü dene (0 = yılın tamamı)")
     ap.add_argument("--yil", type=int, default=0, help="geçmiş bir yılın tamamını indir (ör. 2015)")
+    ap.add_argument("--program", default="", help="önümüzdeki günlerin programını bu klasöre indir")
     ap.add_argument("--ornek", action="store_true", help="--yil ile: yalnızca birkaç günü dene (yıl var mı keşfi)")
     a = ap.parse_args()
     os.makedirs(a.klasor, exist_ok=True)
@@ -102,6 +126,8 @@ def main():
             sayac[sonuc] += 1
             if sonuc == "hata":
                 print(f"  ağ hatası: {g} {s}", flush=True)
+    if a.program and not a.yil:
+        program_indir(a.program, bugun)
     print(f"indi: {sayac['indi']}  zaten vardı: {sayac['var']}  yarış yok: {sayac['yok']}  hata: {sayac['hata']}")
     # hiç dosya inemediyse ve hepsi hata verdiyse iş akışı başarısız görünsün
     if sayac["hata"] and not (sayac["indi"] or sayac["var"]):

@@ -169,6 +169,36 @@ html.kilitli .navwrap,html.kilitli main,html.kilitli footer,html.kilitli #pist{d
 .karne .tiles{grid-template-columns:repeat(2,1fr)}.karne .tile:nth-child(3){border-left:0;padding-left:0}
 .karne .card{padding:14px 16px}.karne .card h2{font-size:16px}
 .karne-alt{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}.karne-alt .ikincil{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.akis-ctl{gap:10px 14px}
+.akis-govde{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;align-items:start}
+@media (max-width:980px){.akis-govde{grid-template-columns:1fr}}
+.akis-kagit{background:#fff;color:#111;border-radius:10px;padding:0 0 12px;overflow-x:auto}
+.akis-baslik{font:700 22px Arial,Helvetica,sans-serif;padding:12px 14px;outline:none}
+.akis-baslik.gunluk{color:#E00000;text-align:center}.akis-baslik.foto{background:#4A86E8;color:#000;padding:22px 14px 8px;border-radius:10px 10px 0 0}
+.akis-baslik:focus{box-shadow:inset 0 0 0 2px #00A830}
+.akis-tablo{font:13px/1.35 Arial,Helvetica,sans-serif;color:#111;min-width:720px;width:100%;table-layout:fixed}
+.akis-tablo th{position:static;background:#BDD7EE;color:#111;font-weight:700;font-size:12px;border:1px solid #c5ccd6;padding:6px 8px}
+.akis-baslik.foto+.akis-tablo th{background:#fff}
+.akis-tablo td{border:1px solid #d5dbe3;padding:6px 8px;white-space:normal}
+.akis-tablo tbody tr:hover td{background:#f4f8ff}
+.akis-tablo td.no{background:#E2EFDA;color:#333;text-align:right;width:30px}
+.akis-tablo td[contenteditable]{outline:none;cursor:text}.akis-tablo td[contenteditable]:focus{box-shadow:inset 0 0 0 2px #00A830;background:#fff}
+.akis-tablo td.kosu{text-align:center}.akis-tablo td.konu,.akis-tablo td.sehir,.akis-tablo td.tarih{font-weight:700}
+.akis-tablo td.islem{white-space:nowrap;width:1%;border-color:transparent;background:#fff}
+.akis-tablo td.islem button{background:none;border:1px solid #d5dbe3;border-radius:6px;color:#556;cursor:pointer;padding:2px 7px;margin-left:3px;font-size:12px}
+.akis-tablo td.islem button:hover{border-color:#556;color:#000}
+.akis-tablo th.islem{background:#fff;border-color:transparent}
+.akis-bos{color:#667;font-style:italic;padding:16px!important}
+.akis-alt{display:flex;gap:8px;padding:12px 12px 0}.akis-alt .ikincil{background:#fff;color:#223;border:1px solid #c5ccd6}
+.akis-oneri{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px}
+.akis-oneri h3{margin:0 0 10px;font-size:16px}.akis-oneri h3 small{color:var(--mut);font-weight:500;font-size:12px}
+.akis-oneri .ikincil{background:transparent;color:var(--fg);border:1px solid var(--line);margin-bottom:10px}
+.akis-oneri ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;max-height:640px;overflow-y:auto}
+.akis-oneri li{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:9px 10px;border:1px solid var(--line);border-radius:10px;font-size:13px}
+.akis-oneri li .kat{grid-column:1/-1;color:var(--yesil);font-size:11px;font-weight:600}
+.akis-oneri li small{color:var(--mut);font-size:12px;grid-column:1}
+.akis-oneri li button{grid-row:2/4;grid-column:2;align-self:center;background:var(--yesil);color:var(--lacivert);border:0;border-radius:16px;font:600 12px Inter,sans-serif;padding:5px 10px;cursor:pointer}
+.akis-oneri li.eklendi{opacity:.55}.akis-oneri li button:disabled{background:var(--line);color:var(--mut);cursor:default}
 .cikis{display:block;margin:-28px auto 30px;max-width:1140px;width:calc(100% - 40px);text-align:left;background:none;border:0;color:var(--mut);font:inherit;font-size:12px;text-decoration:underline;cursor:pointer;padding:0}
 </style>
 </head>
@@ -182,6 +212,7 @@ html.kilitli .navwrap,html.kilitli main,html.kilitli footer,html.kilitli #pist{d
 </header></div>
 <div class="navwrap"><nav id="sekmeler">
 <button data-tab="genel" class="on">Özet</button>
+<button data-tab="akis">Akış</button>
 <button data-tab="sonuc">Sonuçlar</button>
 <button data-tab="atlar">Atlar</button>
 <button data-tab="jokey">Jokeyler</button>

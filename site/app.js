@@ -391,8 +391,9 @@ function sonuc(L) {
 // ---------- çizim ----------
 function ciz() {
   const L = suzulmus(), el = $('icerik');
-  $('filtreler').hidden = sekme === 'oyun' || sekme === 'tum';
+  $('filtreler').hidden = sekme === 'oyun' || sekme === 'tum' || sekme === 'akis';
   if (sekme === 'oyun') { el.innerHTML = '<div id="oyunAlan"></div>'; if (window.tjkOyun) window.tjkOyun.baslat(); }
+  else if (sekme === 'akis') { el.innerHTML = '<div id="akisAlan"></div>'; if (window.tjkAkis) window.tjkAkis.baslat(); }
   else if (sekme === 'tum') { el.innerHTML = '<div id="tumAlan"></div>'; if (window.tjkTum) window.tjkTum.baslat(); }
   else el.innerHTML = {genel, atlar, jokey: jokeyler, antr: antrenorler, yetis, kosul, sonuc}[sekme](L);
   if (sekme === 'genel') pist();
@@ -432,5 +433,5 @@ function pist() {
   pistIlk = false;
 }
 $('dipnot').textContent = `Kaynak: TJK resmi sonuçları. Son yarış günü: ${tarih(RAW.son)}. İkramiye yalnızca birincilik ikramiyesidir.`;
-let h0 = location.hash.slice(1); if (h0 === 'insan') h0 = 'jokey'; if (['genel', 'atlar', 'jokey', 'antr', 'yetis', 'kosul', 'sonuc', 'tum', 'oyun'].includes(h0)) { sekme = h0; document.querySelectorAll('#sekmeler button').forEach((x) => x.classList.toggle('on', x.dataset.tab === h0)); }
+let h0 = location.hash.slice(1); if (h0 === 'insan') h0 = 'jokey'; if (['genel', 'akis', 'atlar', 'jokey', 'antr', 'yetis', 'kosul', 'sonuc', 'tum', 'oyun'].includes(h0)) { sekme = h0; document.querySelectorAll('#sekmeler button').forEach((x) => x.classList.toggle('on', x.dataset.tab === h0)); }
 ciz();

@@ -36,6 +36,31 @@ def apranti_oku():
     return {"tarih": tarih, "liste": liste}
 
 
+def program_oku():
+    """program/ klasöründeki ileri tarihli koşu başlıkları (tarih, hipodrom, koşu no, sınıf, saat, mesafe, pist)."""
+    import glob
+    import re
+    yol = os.path.join(os.path.dirname(os.path.abspath(__file__)), "program")
+    liste = []
+    for f in sorted(glob.glob(os.path.join(yol, "*.csv"))):
+        tarih, hip = os.path.basename(f)[:-4].split("_", 1)
+        try:
+            metin = open(f, encoding="utf-8-sig").read()
+        except UnicodeDecodeError:
+            metin = open(f, encoding="cp1254").read()
+        for ln in metin.splitlines():
+            c = ln.split(";")
+            m = re.match(r"^\s*(\d+)\. Kosu :\s*(.*?)\s*(\d{1,2}[.:]\d{2})\s*$", c[0])
+            if not m:
+                continue
+            p = [x.strip() for x in c]
+            mes = next((x[:-1] for x in p if re.fullmatch(r"\d{3,4}m", x)), "")
+            pist = next((x for x in p if x in ("Kum", "Çim", "Sentetik")), "")
+            liste.append({"tarih": tarih, "hip": hip, "no": int(m[1]), "ad": m[2].strip(), "saat": m[3].replace(":", "."),
+                          "sinif": p[1] if len(p) > 1 else "", "mes": mes, "pist": pist})
+    return liste
+
+
 def main():
     src = os.path.expanduser(sys.argv[1])
     out_dir = sys.argv[2] if len(sys.argv) > 2 else os.path.dirname(os.path.abspath(__file__))
@@ -118,7 +143,7 @@ def main():
     data = {"olusturma": rows[-1]["tarih"],
             "ilk": rows[0]["tarih"], "son": rows[-1]["tarih"],
             "dict": {k: v["list"] for k, v in D.items()}, "races": races, "starts": S,
-            "apranti": apranti_oku()}
+            "apranti": apranti_oku(), "program": program_oku()}
     path = os.path.join(out_dir, "data.js")
     with open(path, "w", encoding="utf-8") as f:
         f.write("window.TJK_DATA=")
