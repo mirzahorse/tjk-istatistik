@@ -29,6 +29,9 @@ select,input{font:inherit;font-size:14px;color:var(--fg);background:var(--lacive
 select:focus,input:focus{outline:2px solid var(--yesil);outline-offset:-1px}
 .btn{font:inherit;font-size:13px;font-weight:600;background:var(--yesil);color:var(--lacivert);border:0;border-radius:4px;padding:8px 12px;cursor:pointer}
 .btn:hover{filter:brightness(1.1)}
+.tum-kat{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 12px}.tum-kat .btn{background:transparent;color:var(--ink,inherit);border:1px solid var(--line)}.tum-kat .btn.on{background:var(--yesil);color:var(--lacivert);border-color:var(--yesil)}
+.tum-f{position:static;margin:0 0 14px;padding:0;border:0;background:none}
+tr.sec td{background:var(--panel2)}.tik a{color:inherit;text-decoration:none;border-bottom:1px dotted var(--mut)}.tile .v{overflow-wrap:anywhere}
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px}
 .tile{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--yesil);border-radius:var(--r);padding:12px 14px}
 .tile .k{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.03em}.tile .v{font-size:28px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums}
@@ -83,6 +86,7 @@ footer{max-width:1180px;margin:0 auto;padding:0 20px 30px;color:var(--mut);font-
 <button data-tab="yetis">Yetiştiricilik</button>
 <button data-tab="kosul">Koşu koşulları</button>
 <button data-tab="sonuc">Sonuçlar</button>
+<button data-tab="tum">Tüm zamanlar</button>
 <button data-tab="oyun">O mu, bu mu?</button>
 </nav></div>
 <main>
@@ -473,8 +477,9 @@ function sonuc(L) {
 // ---------- çizim ----------
 function ciz() {
   const L = suzulmus(), el = $('icerik');
-  $('filtreler').hidden = sekme === 'oyun';
+  $('filtreler').hidden = sekme === 'oyun' || sekme === 'tum';
   if (sekme === 'oyun') { el.innerHTML = '<div id="oyunAlan"></div>'; if (window.tjkOyun) window.tjkOyun.baslat(); }
+  else if (sekme === 'tum') { el.innerHTML = '<div id="tumAlan"></div>'; if (window.tjkTum) window.tjkTum.baslat(); }
   else el.innerHTML = {genel, atlar, insan, yetis, kosul, sonuc}[sekme](L);
   if (sekme === 'atlar') { atKarnesi(); baglaArama('atAra', 'atAra', atKarnesi); }
   if (sekme === 'insan') {
@@ -491,11 +496,12 @@ function baglaArama(id, key, fn) {
   el.addEventListener('input', () => { clearTimeout(t); t = setTimeout(() => { durum[key] = el.value; fn(); }, 300); });
 }
 $('dipnot').textContent = `Kaynak: TJK resmi günlük sonuç dosyaları (medya-cdn.tjk.org). Koşmayan atlar hariç. İkramiye yalnızca birincilik ikramiyesidir. Atlar ad + baba + anne ile ayırt edilir. Son yarış günü: ${tarih(RAW.son)}. Bu sayfa bağımsızdır, TJK ile bağlantısı yoktur.`;
-const h0 = location.hash.slice(1); if (['genel', 'atlar', 'insan', 'yetis', 'kosul', 'sonuc', 'oyun'].includes(h0)) { sekme = h0; document.querySelectorAll('#sekmeler button').forEach((x) => x.classList.toggle('on', x.dataset.tab === h0)); }
+const h0 = location.hash.slice(1); if (['genel', 'atlar', 'insan', 'yetis', 'kosul', 'sonuc', 'tum', 'oyun'].includes(h0)) { sekme = h0; document.querySelectorAll('#sekmeler button').forEach((x) => x.classList.toggle('on', x.dataset.tab === h0)); }
 ciz();
 </script>
 <script src="bot.js"></script>
 <script src="oyun.js"></script>
+<script src="tum.js"></script>
 <script src="firebase-config.js"></script>
 <script type="module" src="uye.js"></script>
 </body>
