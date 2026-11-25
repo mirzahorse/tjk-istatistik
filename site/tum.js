@@ -104,6 +104,8 @@
       ev.preventDefault(); S.sec = a.dataset.ad; ciz().then(() => document.getElementById('tumDetay')?.scrollIntoView({behavior: 'smooth'}));
     }));
   }
-  window.tjkTum = {baslat: () => { document.getElementById('tumAlan').innerHTML = '<section class="card"><div class="empty">Yükleniyor…</div></section>'; ciz(); }};
+  // başka yerden (karne panelinden) bir ismi açmak için
+  const goster = (kat, ad) => { S.kat = kat; S.ara = ad; S.sec = null; S.min = null; if (document.getElementById('tumAlan')) ciz(); };
+  window.tjkTum = {goster, baslat: () => { document.getElementById('tumAlan').innerHTML = '<section class="card"><div class="empty">Yükleniyor…</div></section>'; ciz(); }};
   if (document.getElementById('tumAlan')) window.tjkTum.baslat(); // sayfa doğrudan #tum ile açıldıysa
 })();
