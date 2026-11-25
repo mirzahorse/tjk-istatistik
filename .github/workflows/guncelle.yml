@@ -50,14 +50,11 @@ jobs:
             echo "degisti=1" >> "$GITHUB_OUTPUT"
           fi
 
-  # Siteyi GitHub Pages'te yayınla: veri değiştiyse ya da elle çalıştırıldıysa
-  yayinla:
+  # Siteyi paketle (veri değiştiyse ya da elle çalıştırıldıysa)
+  paketle:
     needs: guncelle
     if: needs.guncelle.outputs.degisti == '1' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.yayin.outputs.page_url }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -66,5 +63,20 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site
+
+  # GitHub Pages'te yayınla; GitHub tarafındaki geçici hatalara karşı bir kez yeniden dener
+  yayinla:
+    needs: paketle
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.yayin2.outputs.page_url || steps.yayin.outputs.page_url }}
+    steps:
       - id: yayin
+        continue-on-error: true
+        uses: actions/deploy-pages@v4
+      - if: steps.yayin.outcome == 'failure'
+        run: sleep 45
+      - id: yayin2
+        if: steps.yayin.outcome == 'failure'
         uses: actions/deploy-pages@v4
