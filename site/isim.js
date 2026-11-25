@@ -174,5 +174,38 @@
   let bekle;
   new MutationObserver(() => { clearTimeout(bekle); bekle = setTimeout(() => tara(document.body), 80); }).observe(document.body, {childList: true, subtree: true});
   tara(document.body);
-  window.tjkIsim = {ac};
+  // ---------- sağ üstteki arama ----------
+  const katla = (x) => String(x || '').toLocaleUpperCase('tr').replace(/\s+/g, ' ').trim();
+  function ara(q) {
+    q = katla(q); if (q.length < 2) return [];
+    const L = [];
+    for (const t of SIRA) for (const [ad, liste] of DIZIN[t]) {
+      const A = katla(ad), i = A.indexOf(q); if (i < 0) continue;
+      L.push({ad, tur: t, n: liste.length, puan: (A === q ? -1 : i === 0 ? 0 : 1), alt: t === 'at' ? liste[0].baba : ''});
+    }
+    return L.sort((a, b) => a.puan - b.puan || b.n - a.n).slice(0, 12);
+  }
+  const giris = document.getElementById('araGenel'), araKutu = document.getElementById('araSonuc');
+  if (giris && araKutu) {
+    let sonuc = [], secili = -1;
+    const kapa = () => { araKutu.hidden = true; giris.setAttribute('aria-expanded', 'false'); secili = -1; };
+    const goster = () => {
+      sonuc = ara(giris.value); secili = -1;
+      if (katla(giris.value).length < 2) { kapa(); return; }
+      araKutu.innerHTML = sonuc.length ? sonuc.map((o, i) => `<button type="button" role="option" data-i="${i}"><span>${esc(o.ad)}${o.alt ? ` <small>· ${esc(o.alt)}</small>` : ''}</span><small>${TUR[o.tur].ad} · ${N(o.n)} koşu</small></button>`).join('') : '<div class="bos">Bu isimde kimse bulunamadı.</div>';
+      araKutu.hidden = false; giris.setAttribute('aria-expanded', 'true');
+    };
+    const sec = (i) => { const o = sonuc[i]; if (!o) return; kapa(); giris.blur(); ac(o.ad, o.tur); };
+    let t; giris.addEventListener('input', () => { clearTimeout(t); t = setTimeout(goster, 120); });
+    giris.addEventListener('focus', () => { if (katla(giris.value).length >= 2) goster(); });
+    giris.addEventListener('keydown', (e) => {
+      const d = araKutu.querySelectorAll('button');
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); if (!d.length) return; secili = (secili + (e.key === 'ArrowDown' ? 1 : -1) + d.length) % d.length; d.forEach((b, i) => b.classList.toggle('sec', i === secili)); d[secili].scrollIntoView({block: 'nearest'}); }
+      else if (e.key === 'Enter') { e.preventDefault(); sec(secili >= 0 ? secili : 0); }
+      else if (e.key === 'Escape') { kapa(); }
+    });
+    araKutu.addEventListener('click', (e) => { const b = e.target.closest('button[data-i]'); if (b) sec(+b.dataset.i); });
+    document.addEventListener('click', (e) => { if (!e.target.closest('.ara-araKutu')) kapa(); });
+  }
+  window.tjkIsim = {ac, ara};
 })();

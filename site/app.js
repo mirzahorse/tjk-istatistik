@@ -208,6 +208,7 @@ function genel(L) {
   const fav = L.filter((r) => r.fav), ikr = sum(L.filter((r) => r.w), (r) => r.rc.ikr);
   let h = '<div class="tiles">' + kutu('Koşu', N(new Set(L.map((r) => r.rc.i)).size)) + kutu('Koşan at', N(atW.size)) +
     kutu('Favori kazanma', P(pct(fav.filter((r) => r.w).length, fav.length))) + kutu('Dağıtılan 1.lik ikramiyesi', M(ikr)) + '</div>';
+  h += '<section class="card pist" id="pist" aria-label="Sezonun önündekiler"></section>';
   h += apranti();
   const ay = new Map(); for (const r of L) { const k = r.rc.tarih.slice(0, 7); if (!ay.has(k)) ay.set(k, new Set()); ay.get(k).add(r.rc.i); }
   const ayD = [...ay].sort().map(([k, s]) => ({k: AY[+k.slice(5) - 1], v: s.size}));
@@ -394,6 +395,7 @@ function ciz() {
   if (sekme === 'oyun') { el.innerHTML = '<div id="oyunAlan"></div>'; if (window.tjkOyun) window.tjkOyun.baslat(); }
   else if (sekme === 'tum') { el.innerHTML = '<div id="tumAlan"></div>'; if (window.tjkTum) window.tjkTum.baslat(); }
   else el.innerHTML = {genel, atlar, jokey: jokeyler, antr: antrenorler, yetis, kosul, sonuc}[sekme](L);
+  if (sekme === 'genel') pist();
   $('aprHepsi')?.addEventListener('change', (e) => { durum.aprHepsi = e.target.checked; ciz(); });
   if (sekme === 'atlar') { atKarnesi(); baglaArama('atAra', 'atAra', atKarnesi); }
   if (sekme === 'jokey' || sekme === 'antr') {
@@ -415,6 +417,7 @@ function baglaArama(id, key, fn) {
 const PIST = {jokey: ['Jokey', (r) => r.jokey], antr: ['Antrenör', (r) => r.antr], at: ['At', (r) => r.k, (r) => r.at], baba: ['Aygır', (r) => r.baba]};
 let pistSec = 'jokey', pistIlk = true;
 function pist() {
+  if (!$('pist')) return;
   const [ad, kf, gf] = PIST[pistSec];
   const g = new Map(), adi = new Map();
   for (const r of rows) { if (!r.w) continue; const k = kf(r); if (!k) continue; g.set(k, (g.get(k) || 0) + 1); if (gf) adi.set(k, gf(r)); }
@@ -428,7 +431,6 @@ function pist() {
   if (pistIlk && !azalt) requestAnimationFrame(() => requestAnimationFrame(() => $('pist').querySelectorAll('.at').forEach((a) => { a.style.width = a.dataset.w + '%'; })));
   pistIlk = false;
 }
-pist();
 $('dipnot').textContent = `Kaynak: TJK resmi sonuçları. Son yarış günü: ${tarih(RAW.son)}. İkramiye yalnızca birincilik ikramiyesidir.`;
 let h0 = location.hash.slice(1); if (h0 === 'insan') h0 = 'jokey'; if (['genel', 'atlar', 'jokey', 'antr', 'yetis', 'kosul', 'sonuc', 'tum', 'oyun'].includes(h0)) { sekme = h0; document.querySelectorAll('#sekmeler button').forEach((x) => x.classList.toggle('on', x.dataset.tab === h0)); }
 ciz();

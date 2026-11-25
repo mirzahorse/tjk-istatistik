@@ -18,14 +18,14 @@ h1,h2,nav button,.tile .v,.pist-ad,.pist-sayi{font-family:"Space Grotesk",Inter,
 ::selection{background:var(--yesil);color:var(--lacivert)}
 
 /* ---- açılış: pist ---- */
-.ust{position:relative;overflow:hidden;background:
+.ust{position:relative;z-index:6;background:
   radial-gradient(90% 140% at 85% -20%,rgba(0,241,52,.16),transparent 60%),
   radial-gradient(60% 120% at 10% -30%,rgba(216,182,122,.10),transparent 60%),var(--bg)}
 .ust::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--ray);opacity:.85}
-header{max-width:1180px;margin:0 auto;padding:30px 20px 34px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:28px 48px;align-items:end}
-.kimlik{display:flex;flex-direction:column;gap:18px}
-header img{width:56px;height:56px;border-radius:12px;background:var(--yesil);padding:6px}
-h1{font-size:clamp(34px,5vw,56px);line-height:.98;margin:0;font-weight:700;letter-spacing:-.035em}
+header{max-width:1180px;margin:0 auto;padding:18px 20px 20px;display:flex;justify-content:space-between;align-items:center;gap:16px 28px;flex-wrap:wrap}
+.kimlik{display:flex;align-items:center;gap:14px}
+header img{width:46px;height:46px;border-radius:12px;background:var(--yesil);padding:6px}
+h1{font-size:clamp(24px,3vw,32px);line-height:1.05;margin:0;font-weight:700;letter-spacing:-.035em}
 h1 span{display:block;color:var(--mut);font-weight:500;font-size:.42em;letter-spacing:-.01em;margin-top:10px}
 .sub{color:var(--mut);font-size:14px;margin:0;font-variant-numeric:tabular-nums}
 .pist{position:relative;padding:4px 0 0}
@@ -45,7 +45,17 @@ h1 span{display:block;color:var(--mut);font-weight:500;font-size:.42em;letter-sp
 .serit{margin-right:8px}
 .direk{position:absolute;top:-6px;bottom:-6px;right:70px;width:3px;background:repeating-linear-gradient(180deg,#EEF2F6 0 6px,#FF7A66 6px 12px);border-radius:2px}
 .pist-not{font-size:12px;color:var(--mut);margin-top:10px}
-@media (max-width:820px){header{grid-template-columns:1fr;padding:22px 16px 26px}.kimlik{flex-direction:row;align-items:center;gap:14px}header img{width:44px;height:44px}}
+@media (max-width:640px){header{padding:14px 16px 16px}.ara-kutu{width:100%}}
+.gizli{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.ara-kutu{position:relative;width:min(400px,100%)}
+.ara-kutu input{width:100%;font-size:15px;padding:11px 14px 11px 40px;border-radius:24px;background:var(--panel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238A97AD' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-3.5-3.5'/%3E%3C/svg%3E") no-repeat 15px 50%}
+.ara-sonuc{position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:30;background:var(--panel2);border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 40px rgba(0,0,0,.5);padding:6px;max-height:60vh;overflow-y:auto}
+.ara-sonuc[hidden]{display:none}
+.ara-sonuc button{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;border-radius:8px;color:var(--fg);font:inherit;font-size:14px;padding:9px 10px;cursor:pointer}
+.ara-sonuc button:hover,.ara-sonuc button.sec{background:var(--panel)}
+.ara-sonuc small{color:var(--mut);font-size:12px;white-space:nowrap}
+.ara-sonuc .bos{color:var(--mut);font-size:13px;padding:10px}
+.card.pist{padding:18px 20px}
 
 /* ---- sekmeler ---- */
 .navwrap{background:rgba(7,14,29,.88);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
@@ -164,9 +174,10 @@ html.kilitli .navwrap,html.kilitli main,html.kilitli footer,html.kilitli #pist{d
 <body>
 <div class="ust"><header>
 <div class="kimlik"><img src="logo.png" alt="YRŞ TYZ">
-<div><h1>Editör Paneli</h1>
-<p class="sub" id="ozetSatir" style="margin-top:12px">Yükleniyor…</p></div></div>
-<section class="pist" id="pist" aria-label="Sezonun önündekiler"></section>
+<div><h1>Editör Paneli</h1><p class="sub" id="ozetSatir">Yükleniyor…</p></div></div>
+<div class="ara-kutu" role="search"><label for="araGenel" class="gizli">İsim ara</label>
+<input id="araGenel" type="search" placeholder="At, jokey, antrenör, aygır ara…" autocomplete="off" aria-controls="araSonuc" aria-expanded="false">
+<div id="araSonuc" class="ara-sonuc" role="listbox" hidden></div></div>
 </header></div>
 <div class="navwrap"><nav id="sekmeler">
 <button data-tab="genel" class="on">Özet</button>
