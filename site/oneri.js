@@ -32,6 +32,15 @@
           `<p class="fikir">Fikir: koşu öncesi favoriler ve form grafiği; koşu sonrası kazanan profili.</p>`,
         akis: {konu: k.tarih === bugun ? 'BUGÜNÜN YARIŞLARI' : 'DEKLARE', goruntu: 'BROWSER', aciklama: `${k.tarih.split('-').reverse().join('.')} ${BU(k.hip)} ${BU(sinif)}${k.ad ? ' - ' + BU(k.ad) : ''}`}});
     }
+    // 1b) kayıt aşamasındaki önemli koşular (henüz deklare edilmemiş günler)
+    const dekGun = new Set(PRG.map((k) => k.tarih + '|' + k.hip));
+    for (const k of (RAW.kayit || []).filter((k) => k.tarih >= bugun && ONEMLI.test(k.sinif) && !dekGun.has(k.tarih + '|' + k.hip))) {
+      const sinif = k.sinif.split('/')[0];
+      const guclu = k.atlar.map((a) => ({a, b: (atKos.get(a.at) || []).filter((r) => r.w).length})).filter((o) => o.b).sort((x, y) => y.b - x.b).slice(0, 4);
+      K.push({grup: 'Önemli koşular', baslik: `${k.hip} ${sinif} · kayıt`, alt: `${gunAdi(k.tarih)} · ${k.mes} m ${k.pist} · ${k.atlar.length} kayıtlı at`,
+        metin: guclu.length ? `<p>Bu yıl en çok kazananlar: ${guclu.map((o) => `${isim(o.a.at, 'at')} <small>${o.b} birincilik</small>`).join(', ')}</p>` : '<p>Kayıtlı atlar arasında bu yıl kazanan yok.</p>',
+        akis: {konu: 'KAYIT', goruntu: 'BROWSER', aciklama: `${k.tarih.split('-').reverse().join('.')} ${BU(k.hip)} ${BU(sinif)}`}});
+    }
     // 2) seri peşindeki atlar
     for (const k of PRG) for (const a of k.atlar) {
       const g = atKos.get(a.at); if (!g || !g.length) continue;

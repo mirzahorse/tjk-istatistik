@@ -53,6 +53,10 @@ def program_oku(klasor="program"):
         for ln in metin.splitlines():
             c = [x.strip() for x in ln.split(";")]
             m = re.match(r"^\s*(\d+)\. Kosu :\s*(.*?)\s*(\d{1,2}[.:]\d{2})\s*$", c[0])
+            # kayıt listelerinde başlıkta koşu numarası ve saat yok: "Kosu :   ;Maiden/Dişi; ..."
+            mk = None if m else re.match(r"^\s*Kosu :\s*(.*?)\s*$", c[0])
+            if mk:
+                m = [None, str(sum(1 for k in liste if k["tarih"] == tarih and k["hip"] == hip) + 1), mk[1], ""]
             if m:
                 mes = next((x[:-1] for x in c if re.fullmatch(r"\d{3,4}m", x)), "")
                 pist = next((x for x in c if x in ("Kum", "Çim", "Sentetik")), "")
@@ -62,6 +66,9 @@ def program_oku(klasor="program"):
                 liste.append(kosu)
                 continue
             # at satırı: No;At;Yaş;Baba;Anne;Kilo;Jokey;Sahip;Antrenör;St;AGF;HP;Son 6;KGS;s20;En iyi derece
+            if kosu and klasor == "kayit" and len(c) >= 8 and c[0].isdigit() and re.match(r"^\d+y", c[2]):
+                kosu["atlar"].append({"no": int(c[0]), "at": c[1], "baba": c[3], "antr": c[7]})
+                continue
             if kosu and len(c) >= 12 and c[0].isdigit() and re.match(r"^\d+y", c[2]):
                 if "Koşmaz" in ln:
                     continue
