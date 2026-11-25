@@ -8,76 +8,119 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{--yesil:#00F134;--lacivert:#070E1D;--bg:#070E1D;--panel:#0E1A30;--panel2:#14223D;--fg:#F2F5F8;--mut:#93A0B5;--line:#22314F;--acc:#00F134;--acc2:#0B6B25;--bad:#FF6B5A;--good:#00F134;--r:6px}
+/* Gece koşusu: projektör altındaki pist. Yeşil yalnızca önde olanı ve seçili olanı gösterir. */
+:root{--yesil:#00F134;--lacivert:#070E1D;--bg:#070E1D;--panel:#0C1628;--panel2:#122036;--fg:#EEF2F6;--mut:#8A97AD;--line:#1B2A44;--acc:#00F134;--acc2:#0B6B25;--kum:#D8B67A;--bad:#FF7A66;--good:#00F134;--r:6px;--R:14px;--ray:repeating-linear-gradient(90deg,#EEF2F6 0 22px,transparent 22px 34px)}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
-h1,h2,nav button,.tile .v{font-family:"Space Grotesk",Inter,sans-serif}
-.ust{background:var(--yesil);color:var(--lacivert)}
-header{padding:16px 20px;max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:16px}
-header img{width:64px;height:64px;flex:none}
-h1{font-size:26px;margin:0;font-weight:700;letter-spacing:-.01em;text-transform:uppercase}
-.sub{color:var(--lacivert);opacity:.75;font-size:13px;margin:2px 0 0;font-weight:500}
-.navwrap{background:var(--lacivert);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
-nav{display:flex;gap:2px;overflow-x:auto;max-width:1180px;margin:0 auto;padding:0 20px}
-nav button{background:none;border:0;border-bottom:3px solid transparent;color:var(--mut);font-size:15px;font-weight:600;padding:12px 12px 9px;cursor:pointer;white-space:nowrap;text-transform:uppercase;letter-spacing:.02em}
+html{scroll-padding-top:64px}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+h1,h2,nav button,.tile .v,.pist-ad,.pist-sayi{font-family:"Space Grotesk",Inter,sans-serif}
+:focus-visible{outline:2px solid var(--yesil);outline-offset:2px}
+::selection{background:var(--yesil);color:var(--lacivert)}
+
+/* ---- açılış: pist ---- */
+.ust{position:relative;overflow:hidden;background:
+  radial-gradient(90% 140% at 85% -20%,rgba(0,241,52,.16),transparent 60%),
+  radial-gradient(60% 120% at 10% -30%,rgba(216,182,122,.10),transparent 60%),var(--bg)}
+.ust::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--ray);opacity:.85}
+header{max-width:1180px;margin:0 auto;padding:30px 20px 34px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:28px 48px;align-items:end}
+.kimlik{display:flex;flex-direction:column;gap:18px}
+header img{width:56px;height:56px;border-radius:12px;background:var(--yesil);padding:6px}
+h1{font-size:clamp(34px,5.2vw,58px);line-height:.98;margin:0;font-weight:700;letter-spacing:-.035em}
+h1 span{display:block;color:var(--mut);font-weight:500;font-size:.42em;letter-spacing:-.01em;margin-top:10px}
+.sub{color:var(--mut);font-size:14px;margin:0;font-variant-numeric:tabular-nums}
+.pist{position:relative;padding:4px 0 0}
+.pist-bas{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:10px;font-size:13px;color:var(--mut)}
+.pist-bas b{color:var(--fg);font-weight:600;font-size:15px}
+.pist-sec{display:flex;gap:4px}
+.pist-sec button{font:inherit;font-size:12px;color:var(--mut);background:none;border:1px solid var(--line);border-radius:20px;padding:3px 10px;cursor:pointer}
+.pist-sec button.on{color:var(--lacivert);background:var(--fg);border-color:var(--fg)}
+.kulvar{position:relative;display:grid;grid-template-columns:22px minmax(0,1fr) 52px;align-items:center;gap:10px;height:38px;border-top:1px dashed rgba(238,242,246,.12)}
+.kulvar:last-child{border-bottom:1px dashed rgba(238,242,246,.12)}
+.kulvar .no{font:600 12px "Space Grotesk";color:var(--mut);text-align:center}
+.serit{position:relative;height:100%}
+.at{position:absolute;left:0;top:7px;bottom:7px;border-radius:0 20px 20px 0;background:linear-gradient(90deg,rgba(238,242,246,.04),rgba(238,242,246,.16));display:flex;align-items:center;justify-content:flex-end;padding-right:10px;min-width:max-content;transition:width 1.4s cubic-bezier(.2,.75,.2,1)}
+.kulvar:first-child .at{background:linear-gradient(90deg,rgba(0,241,52,.05),rgba(0,241,52,.9));color:var(--lacivert)}
+.pist-ad{font-weight:600;font-size:14px;white-space:nowrap;letter-spacing:-.01em}
+.pist-sayi{text-align:right;font-weight:700;font-size:15px;color:var(--fg);font-variant-numeric:tabular-nums}
+.serit{margin-right:8px}
+.direk{position:absolute;top:-6px;bottom:-6px;right:70px;width:3px;background:repeating-linear-gradient(180deg,#EEF2F6 0 6px,#FF7A66 6px 12px);border-radius:2px}
+.pist-not{font-size:12px;color:var(--mut);margin-top:10px}
+@media (max-width:820px){header{grid-template-columns:1fr;padding:22px 16px 26px}.kimlik{flex-direction:row;align-items:center;gap:14px}header img{width:44px;height:44px}}
+
+/* ---- sekmeler ---- */
+.navwrap{background:rgba(7,14,29,.88);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+nav{display:flex;gap:4px;overflow-x:auto;max-width:1180px;margin:0 auto;padding:0 14px;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav button{background:none;border:0;border-bottom:2px solid transparent;color:var(--mut);font-size:15px;font-weight:600;padding:15px 10px 13px;cursor:pointer;white-space:nowrap;letter-spacing:-.005em}
 nav button:hover{color:var(--fg)}
-nav button.on{color:var(--yesil);border-color:var(--yesil)}
-main{max-width:1180px;margin:0 auto;padding:18px 20px 40px}
-.filters{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:end;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;margin-bottom:16px}
-.filters label,.ctl label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--mut)}
-select,input{font:inherit;font-size:14px;color:var(--fg);background:var(--lacivert);border:1px solid var(--line);border-radius:4px;padding:6px 8px;min-width:0;color-scheme:dark}
+nav button.on{color:var(--fg);border-color:var(--yesil)}
+
+main{max-width:1180px;margin:0 auto;padding:24px 20px 48px}
+.filters{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:end;background:transparent;border:0;border-bottom:1px solid var(--line);border-radius:0;padding:0 0 18px;margin-bottom:22px}
+.filters label,.ctl label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mut)}
+select,input{font:inherit;font-size:14px;color:var(--fg);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 10px;min-width:0;color-scheme:dark}
+select:hover,input:hover{border-color:#2A3D60}
 select:focus,input:focus{outline:2px solid var(--yesil);outline-offset:-1px}
-.btn{font:inherit;font-size:13px;font-weight:600;background:var(--yesil);color:var(--lacivert);border:0;border-radius:4px;padding:8px 12px;cursor:pointer}
-.btn:hover{filter:brightness(1.1)}
-.tum-kat{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 12px}.tum-kat .btn{background:transparent;color:var(--ink,inherit);border:1px solid var(--line)}.tum-kat .btn.on{background:var(--yesil);color:var(--lacivert);border-color:var(--yesil)}
-.tum-f{position:static;margin:0 0 14px;padding:0;border:0;background:none}
-tr.sec td{background:var(--panel2)}.tik a{color:inherit;text-decoration:none;border-bottom:1px dotted var(--mut)}.tile .v{overflow-wrap:anywhere}
-.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px}
-.tile{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--yesil);border-radius:var(--r);padding:12px 14px}
-.tile .k{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.03em}.tile .v{font-size:28px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums}
-.tile .s{font-size:12px;color:var(--mut)}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;min-width:0;margin-bottom:14px}
+.btn{font:inherit;font-size:13px;font-weight:600;background:var(--fg);color:var(--lacivert);border:0;border-radius:8px;padding:8px 14px;cursor:pointer}
+.btn:hover{background:#fff}
+#temizle{background:transparent;color:var(--mut);border:1px solid var(--line)}#temizle:hover{color:var(--fg)}
+.tum-kat{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 16px}.tum-kat .btn{background:transparent;color:var(--mut);border:1px solid var(--line);border-radius:20px}.tum-kat .btn.on{background:var(--fg);color:var(--lacivert);border-color:var(--fg)}
+.tum-f{margin:0 0 18px;padding:0;border:0;background:none}
+tr.sec td{background:var(--panel2)}.tik a{color:inherit;text-decoration:none;border-bottom:1px dotted var(--mut)}.tik a:hover{color:var(--yesil);border-color:var(--yesil)}.tile .v{overflow-wrap:anywhere}
+
+/* ---- sayılar ---- */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:0;margin-bottom:22px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.tile{background:none;border:0;border-left:1px solid var(--line);border-radius:0;padding:16px 18px}
+.tile:first-child{border-left:0;padding-left:0}
+.tile .k{font-size:13px;color:var(--mut)}.tile .v{font-size:clamp(24px,2.4vw,32px);font-weight:700;margin-top:4px;letter-spacing:-.03em;line-height:1.1;font-variant-numeric:tabular-nums}
+.tile .s{font-size:12px;color:var(--mut);margin-top:2px}
+@media (max-width:620px){.tile{border-left:0;border-top:1px solid var(--line);padding-left:0}.tile:first-child{border-top:0}}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--R);padding:18px 20px;min-width:0;margin-bottom:16px}
 .grid .card{margin-bottom:0}
-.grid+.card,.card+.grid,.grid+.grid{margin-top:14px}
-.card h2{font-size:17px;margin:0 0 2px;font-weight:700}
-.card .d{font-size:13px;color:var(--mut);margin:0 0 10px}
+.grid+.card,.card+.grid,.grid+.grid{margin-top:16px}
+.card h2{font-size:18px;margin:0 0 4px;font-weight:600;letter-spacing:-.015em}
+.card .d{font-size:13px;color:var(--mut);margin:0 0 14px;max-width:72ch}
 .card .d b{color:var(--fg)}
-.ctl{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:end;margin-bottom:10px}
-.tw{overflow-x:auto}.tw.tall{max-height:460px;overflow-y:auto}
+.ctl{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:end;margin-bottom:12px}
+.tw{overflow-x:auto}.tw.tall{max-height:480px;overflow-y:auto}
 table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
-th{text-align:left;font-size:11px;font-weight:600;color:var(--mut);text-transform:uppercase;letter-spacing:.03em;border-bottom:1px solid var(--line);padding:7px 8px;white-space:nowrap;position:sticky;top:0;background:var(--panel)}
-td{padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{text-align:left;font-size:12px;font-weight:500;color:var(--mut);border-bottom:1px solid var(--line);padding:8px 10px;white-space:nowrap;position:sticky;top:0;background:var(--panel)}
+td{padding:8px 10px;border-bottom:1px solid rgba(27,42,68,.7);white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
 tbody tr:hover td{background:var(--panel2)}
 .r{text-align:right}.pos{color:var(--good);font-weight:600}.neg{color:var(--bad);font-weight:600}
-.empty{color:var(--mut);font-size:13px;padding:10px 0}
+.empty{color:var(--mut);font-size:14px;padding:12px 0}
 svg text{fill:var(--mut);font-size:11px;font-family:Inter,sans-serif}svg .val{fill:var(--fg);font-size:11px;font-weight:600}
-svg .bar{fill:var(--yesil)}svg .bar2{fill:#7CF79A}svg .grd{stroke:var(--line)}svg .ln{stroke:var(--yesil);stroke-width:2.5;fill:none}svg .dot{fill:var(--yesil)}
-svg rect:hover{filter:brightness(1.2)}
-.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}
-.chip{font:inherit;font-size:13px;color:var(--fg);border:1px solid var(--line);background:var(--lacivert);border-radius:20px;padding:4px 10px;cursor:pointer}
+svg .bar{fill:var(--fg);opacity:.86}svg .bar2{fill:var(--kum)}svg .grd{stroke:var(--line)}svg .ln{stroke:var(--yesil);stroke-width:2.5;fill:none}svg .dot{fill:var(--yesil)}
+svg rect:hover{fill:var(--yesil);opacity:1}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 12px}
+.chip{font:inherit;font-size:13px;color:var(--fg);border:1px solid var(--line);background:transparent;border-radius:20px;padding:5px 12px;cursor:pointer}
 .chip small{color:var(--mut)}
 .chip.on{border-color:var(--yesil);color:var(--yesil);font-weight:600}
-footer{max-width:1180px;margin:0 auto;padding:0 20px 30px;color:var(--mut);font-size:12px}
+footer{max-width:1180px;margin:0 auto;padding:22px 20px 40px;color:var(--mut);font-size:12px;border-top:1px solid var(--line);max-width:1140px}
 .hidden{display:none}
 .filters[hidden]{display:none}
-.ms{position:relative;display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--mut)}
-.ms-btn{font:inherit;font-size:14px;color:var(--fg);background:var(--lacivert);border:1px solid var(--line);border-radius:4px;padding:6px 26px 6px 8px;min-width:110px;max-width:200px;text-align:left;cursor:pointer;position:relative;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ms-btn::after{content:"";position:absolute;right:9px;top:50%;width:6px;height:6px;border-right:2px solid var(--mut);border-bottom:2px solid var(--mut);transform:translateY(-70%) rotate(45deg)}
+.ms{position:relative;display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mut)}
+.ms-btn{font:inherit;font-size:14px;color:var(--fg);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 28px 7px 10px;min-width:110px;max-width:200px;text-align:left;cursor:pointer;position:relative;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ms-btn::after{content:"";position:absolute;right:10px;top:50%;width:6px;height:6px;border-right:2px solid var(--mut);border-bottom:2px solid var(--mut);transform:translateY(-70%) rotate(45deg)}
 .ms-btn.dolu{border-color:var(--yesil);color:var(--yesil);font-weight:600}
-.ms-pop{position:absolute;top:100%;left:0;margin-top:4px;z-index:20;background:var(--panel2);border:1px solid var(--line);border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.45);padding:6px;min-width:190px;max-height:320px;overflow-y:auto}
-.ms-pop label{display:flex;flex-direction:row;align-items:center;gap:8px;padding:5px 6px;border-radius:4px;font-size:14px;color:var(--fg);cursor:pointer;white-space:nowrap}
-.ms-pop label:hover{background:var(--lacivert)}
+.ms-pop{position:absolute;top:100%;left:0;margin-top:6px;z-index:20;background:var(--panel2);border:1px solid var(--line);border-radius:12px;box-shadow:0 18px 40px rgba(0,0,0,.5);padding:6px;min-width:200px;max-height:320px;overflow-y:auto}
+.ms-pop label{display:flex;flex-direction:row;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;font-size:14px;color:var(--fg);cursor:pointer;white-space:nowrap}
+.ms-pop label:hover{background:var(--panel)}
 .ms-pop input{accent-color:var(--yesil);width:15px;height:15px;margin:0}
 .ms-ust{display:flex;justify-content:space-between;gap:8px;padding:2px 4px 6px;border-bottom:1px solid var(--line);margin-bottom:4px}
 .ms-ust button{background:none;border:0;color:var(--yesil);font:inherit;font-size:12px;font-weight:600;cursor:pointer;padding:2px}
+@media (prefers-reduced-motion:reduce){.at{transition:none}}
 </style>
 </head>
 <body>
 <div class="ust"><header>
-<img src="logo.png" alt="Logo">
-<div><h1>TJK 2026 İstatistikleri</h1>
-<p class="sub" id="ozetSatir">Yükleniyor…</p></div>
+<div class="kimlik"><img src="logo.png" alt="YRŞ TYZ">
+<div><h1>TJK 2026<span>Türkiye yarışlarının bütün sonuçları, tek sayfada</span></h1>
+<p class="sub" id="ozetSatir" style="margin-top:12px">Yükleniyor…</p></div></div>
+<section class="pist" id="pist" aria-label="Sezonun önündekiler"></section>
 </header></div>
 <div class="navwrap"><nav id="sekmeler">
 <button data-tab="genel" class="on">Genel</button>
@@ -495,6 +538,25 @@ function baglaArama(id, key, fn) {
   const el = $(id); if (!el) return; let t;
   el.addEventListener('input', () => { clearTimeout(t); t = setTimeout(() => { durum[key] = el.value; fn(); }, 300); });
 }
+
+// ---------- açılış: sezonun önündekiler (pist) ----------
+const PIST = {jokey: ['Jokey', (r) => r.jokey], antr: ['Antrenör', (r) => r.antr], at: ['At', (r) => r.k, (r) => r.at], baba: ['Aygır', (r) => r.baba]};
+let pistSec = 'jokey', pistIlk = true;
+function pist() {
+  const [ad, kf, gf] = PIST[pistSec];
+  const g = new Map(), adi = new Map();
+  for (const r of rows) { if (!r.w) continue; const k = kf(r); if (!k) continue; g.set(k, (g.get(k) || 0) + 1); if (gf) adi.set(k, gf(r)); }
+  const ilk = [...g].sort((a, b) => b[1] - a[1]).slice(0, 5), max = ilk[0]?.[1] || 1;
+  const azalt = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  $('pist').innerHTML = `<div class="pist-bas"><span><b>Sezonun önündekiler</b> · birincilik sayısı</span><div class="pist-sec" role="group" aria-label="Sıralama">${Object.entries(PIST).map(([k, v]) => `<button type="button" data-p="${k}" class="${k === pistSec ? 'on' : ''}" aria-pressed="${k === pistSec}">${v[0]}</button>`).join('')}</div></div>
+    <div class="kulvarlar">${ilk.map(([k, v], i) => `<div class="kulvar"><span class="no">${i + 1}</span><div class="serit"><div class="at" data-w="${(100 * v / max).toFixed(1)}" style="width:${pistIlk && !azalt ? '0' : (100 * v / max).toFixed(1)}%"><span class="pist-ad">${esc(adi.get(k) || k)}</span></div></div><span class="pist-sayi">${N(v)}</span></div>`).join('')}<div class="direk" aria-hidden="true"></div></div>
+    <p class="pist-not">${tarih(RAW.ilk)} – ${tarih(RAW.son)} arası tüm koşular. Kırmızı-beyaz direk bitiş çizgisi.</p>`;
+  $('pist').querySelector('.kulvarlar').style.position = 'relative';
+  $('pist').querySelectorAll('[data-p]').forEach((b) => b.addEventListener('click', () => { pistSec = b.dataset.p; pistIlk = false; pist(); }));
+  if (pistIlk && !azalt) requestAnimationFrame(() => requestAnimationFrame(() => $('pist').querySelectorAll('.at').forEach((a) => { a.style.width = a.dataset.w + '%'; })));
+  pistIlk = false;
+}
+pist();
 $('dipnot').textContent = `Kaynak: TJK resmi günlük sonuç dosyaları (medya-cdn.tjk.org). Koşmayan atlar hariç. İkramiye yalnızca birincilik ikramiyesidir. Atlar ad + baba + anne ile ayırt edilir. Son yarış günü: ${tarih(RAW.son)}. Bu sayfa bağımsızdır, TJK ile bağlantısı yoktur.`;
 const h0 = location.hash.slice(1); if (['genel', 'atlar', 'insan', 'yetis', 'kosul', 'sonuc', 'tum', 'oyun'].includes(h0)) { sekme = h0; document.querySelectorAll('#sekmeler button').forEach((x) => x.classList.toggle('on', x.dataset.tab === h0)); }
 ciz();
