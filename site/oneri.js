@@ -79,6 +79,8 @@
         metin: `<p>${isim(o.k, 'jokey')} karnesinden profil kartı (PNG) hazırlanabilir.</p>`,
         akis: {konu: 'ATÇILIK HABERLERİ', goruntu: 'GRAFİK', aciklama: `${o.k} SON 7 GÜNDE ${o.bir} BİRİNCİLİK`}});
     }
+    // 5b) kilometre taşları
+    for (const m of kilometreTaslari(PRG)) K.push(m);
     // 6) haftanın hikâyeleri (son sonuçlardan)
     if (window.tjkAkis) for (const o of window.tjkAkis.oneriler('foto', son).filter((o) => o.konu !== 'DEĞERLENDİRME').slice(0, 12)) {
       K.push({grup: 'Son yarışlardan', baslik: o.aciklama.charAt(0) + o.aciklama.slice(1).toLocaleLowerCase('tr'), alt: `${o.sehir} · ${o.tarih}${o.kosu && o.kosu !== '-' ? ' · ' + o.kosu + '. koşu' : ''} · ${o.kat}`, metin: '',
@@ -96,7 +98,56 @@
     return K;
   }
 
-  const SIRA = ['Önemli koşular', 'Seri peşinde', 'Jokeyliğe yaklaşanlar', 'Formdakiler', 'Uzun aradan dönüş', 'Son yarışlardan', 'Sosyal medya'];
+  // ---------- kilometre taşları ----------
+  let kariyer = null, yukleniyor = false;
+  async function kariyerYukle() {
+    if (kariyer || yukleniyor || !window.tjkCoz) return; yukleniyor = true;
+    try {
+      const [j, t] = await Promise.all(['j', 'tr'].map((k) => window.tjkCoz('kariyer/' + k + '.enc').then(JSON.parse)));
+      const harita = (D) => new Map(D.k.map(([ad, top, yl]) => [ad, {bir: top[1], start: top[0], ilk: yl[0][0]}]));
+      kariyer = {jokey: harita(j), antr: harita(t)};
+    } catch (err) { kariyer = {jokey: new Map(), antr: new Map()}; }
+    if (document.getElementById('oneriAlan')) { ciz(); kariyerYukle(); }
+  }
+  const SEZON_ESIK = [50, 100, 150, 200, 250, 300, 350, 400];
+  const KARIYER_ESIK = [10, 25, 50, 75, 100, 150, 200, 250, 300, 400, 500, 750, 1000];
+  const sonraki = (n, esik) => esik.find((t) => t > n);
+  function kilometreTaslari(PRG) {
+    const O = [], son = RAW.son, uc = gunEkle(son, -2);
+    const binis = (j) => PRG.reduce((t, k) => t + k.atlar.filter((a) => a.jokey === j).length, 0);
+    const kosan = (tur, k) => PRG.reduce((t, kk) => t + kk.atlar.filter((a) => (tur === 'antr' ? a.antr : a.baba) === k).length, 0);
+    const ekle = (baslik, alt, ad, tur, akis) => O.push({grup: 'Kilometre taşları', baslik, alt, metin: `<p>${isim(ad, tur)} · karnesinden profil kartı (PNG) hazırlanabilir.</p>`, akis: {konu: 'ATÇILIK HABERLERİ', goruntu: 'GRAFİK', aciklama: akis}});
+    for (const [tur, alan, ad_] of [['jokey', (r) => r.jokey, 'Jokey'], ['antr', (r) => r.antr, 'Antrenör'], ['baba', (r) => r.baba, 'Aygır']]) {
+      const kaz = new Map(), st = new Map();
+      for (const r of rows) { const k = alan(r); st.set(k, (st.get(k) || 0) + 1); if (r.w) { if (!kaz.has(k)) kaz.set(k, []); kaz.get(k).push(r.rc.tarih); } }
+      for (const [k, t] of kaz) {
+        const w = t.length; t.sort();
+        const T = sonraki(w, SEZON_ESIK), b = tur === 'jokey' ? binis(k) : kosan(tur, k);
+        if (T && T - w <= 3 && b) ekle(`${k} sezonun ${T}. birinciliğine ${T - w} kaldı`, `${ad_} · şu an ${w} birincilik · önümüzdeki günlerde ${b} ${tur === 'jokey' ? 'biniş' : 'koşan at'}`, k, tur, `${k} SEZONUN ${T}. BİRİNCİLİĞİNE ${T - w} KALDI`);
+        const ulasilan = SEZON_ESIK.filter((e2) => e2 <= w).pop();
+        if (ulasilan && t[ulasilan - 1] >= uc) ekle(`${k} sezonun ${ulasilan}. birinciliğini aldı`, `${ad_} · ${tarih(t[ulasilan - 1])}`, k, tur, `${k} SEZONUN ${ulasilan}. BİRİNCİLİĞİNİ ALDI`);
+      }
+      if (tur === 'jokey') for (const [k, n] of st) { const T = [500, 1000].find((x) => x > n); if (T && T - n <= 6) { const b = binis(k); if (b) ekle(`${k} sezonun ${T}. binişine ${T - n} kaldı`, `Jokey · önümüzdeki günlerde ${b} biniş`, k, 'jokey', `${k} SEZONUN ${T}. BİNİŞİNE ${T - n} KALDI`); } }
+    }
+    // kariyer (verimizde kariyeri başlayanlar: 2022 ve sonrası) — 2021 öncesi verisi olmadığı için yalnız bunlar kesin
+    if (kariyer) for (const tur of ['jokey', 'antr']) for (const [k, o] of kariyer[tur]) {
+      if (o.ilk < 2022) continue;
+      const T = sonraki(o.bir, KARIYER_ESIK); if (!T || T - o.bir > 3) continue;
+      ekle(`${k} kariyerinin ${T}. birinciliğine ${T - o.bir} kaldı`, `${tur === 'jokey' ? 'Jokey' : 'Antrenör'} · ${o.ilk}'den bu yana ${o.bir} birincilik`, k, tur, `${k} KARİYERİNİN ${T}. BİRİNCİLİĞİNE ${T - o.bir} KALDI`);
+    }
+    // aprantiler: TJK listesindeki toplam birincilik (kariyerin tamamı)
+    const A = RAW.apranti;
+    if (A) {
+      const sonra = new Map(); for (const r of rows) if (r.w && r.ap && r.rc.tarih > A.tarih) sonra.set(r.jokey, (sonra.get(r.jokey) || 0) + 1);
+      for (const [ad, kisa, , , b1] of A.liste) {
+        const w = b1 + (sonra.get(kisa) || 0), T = sonraki(w, KARIYER_ESIK); if (!T || T - w > 2 || !binis(kisa)) continue;
+        ekle(`${ad} kariyerinin ${T}. birinciliğine ${T - w} kaldı`, `Apranti · önümüzdeki günlerde ${binis(kisa)} biniş`, kisa, 'jokey', `${String(ad).toLocaleUpperCase('tr')} KARİYERİNİN ${T}. BİRİNCİLİĞİNE ${T - w} KALDI`);
+      }
+    }
+    return O;
+  }
+
+  const SIRA = ['Önemli koşular', 'Kilometre taşları', 'Seri peşinde', 'Jokeyliğe yaklaşanlar', 'Formdakiler', 'Uzun aradan dönüş', 'Son yarışlardan', 'Sosyal medya'];
   let filtre = '';
   function ciz() {
     const alan = document.getElementById('oneriAlan'); if (!alan) return;
@@ -115,6 +166,6 @@
       window.tjkAkis?.ekle(K[+b.dataset.i].akis); b.textContent = 'Akışa eklendi ✓'; b.disabled = true;
     }));
   }
-  window.tjkOneri = {baslat: ciz, uret};
+  window.tjkOneri = {baslat: () => { ciz(); kariyerYukle(); }, uret};
   if (document.getElementById('oneriAlan')) ciz();
 })();

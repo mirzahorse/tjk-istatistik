@@ -495,7 +495,7 @@
   // ---------- düğmeler ----------
   function dugmeEkle() {
     document.querySelectorAll('#icerik section.card, #icerik .tiles').forEach((kart) => {
-      if (kart.closest('#akisAlan') || kart.querySelector(':scope > .png-btn') || !kaynaklar(kart).length) return;
+      if (kart.closest('#akisAlan, #bugunAlan') || kart.querySelector(':scope > .png-btn') || !kaynaklar(kart).length) return;
       const b = document.createElement('button');
       b.type = 'button'; b.className = 'png-btn'; b.textContent = 'PNG'; b.title = 'Grafik olarak indir';
       b.addEventListener('click', () => ac(kart));
@@ -507,5 +507,5 @@
   dugmeEkle();
   // grafiğe çevrilebilecek bir tablo/grafik var mı? (sohbet asistanı kullanır)
   const uygun = (el) => kaynaklar(el).some((k) => k.el.tagName !== 'TABLE' || tabloOku(k.el).sayisal.some(Boolean));
-  window.tjkGrafik = {ac, sayi, uygun, profil: profilAc};
+  window.tjkGrafik = {ac, sayi, uygun, profil: profilAc, _: {RENK, BOYUT, zemin, yuvarlak, kirp, indir, logo}};
 })();

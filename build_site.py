@@ -77,7 +77,8 @@ def program_oku(klasor="program"):
                     toks.pop()
                 jok = c[6]
                 agf = re.match(r"%([\d.]+)\((\d+)\)", c[10]) if len(c) > 10 else None
-                kosu["atlar"].append({"no": int(c[0]), "at": " ".join(toks), "baba": c[3], "jokey": jok[:-3].strip() if jok.endswith(" AP") else jok,
+                ekip = c[1].split()[len(toks):]
+                kosu["atlar"].append({"no": int(c[0]), "at": " ".join(toks), "ekip": " ".join(ekip), "kilo": c[5], "st": c[9].split("-")[0].strip(), "baba": c[3], "anne": c[4], "jokey": jok[:-3].strip() if jok.endswith(" AP") else jok,
                                       "ap": jok.endswith(" AP"), "antr": c[8], "agf": float(agf[1]) if agf else None, "agfs": int(agf[2]) if agf else None,
                                       "hp": int(c[11]) if len(c) > 11 and c[11].isdigit() else None, "son6": c[12] if len(c) > 12 else "",
                                       "kgs": int(c[13]) if len(c) > 13 and c[13].isdigit() else None})

@@ -209,6 +209,24 @@ html.kilitli .navwrap,html.kilitli main,html.kilitli footer,html.kilitli #pist{d
 .oneri-kart .fikir{color:var(--kum);font-size:13px}
 .oneri-kart .oneri-ekle{margin-top:auto;align-self:flex-start;background:transparent;color:var(--fg);border:1px solid var(--line)}
 .oneri-kart .oneri-ekle:disabled{color:var(--yesil);border-color:var(--yesil)}
+.kk-atla{display:flex;flex-wrap:wrap;gap:6px}.kk-atla a{font-size:13px;color:var(--mut);text-decoration:none;border:1px solid var(--line);border-radius:16px;padding:3px 10px}.kk-atla a:hover{color:var(--fg);border-color:var(--mut)}
+.kk-ust{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:flex-start}
+.kk-no{color:var(--yesil);font-weight:700;font-size:13px}.kk-saat{color:var(--mut);font-size:13px;margin-left:4px}
+.kk-ust h2{margin:2px 0 2px}
+.kk-sonuc{display:flex;flex-direction:column;align-items:flex-end;gap:2px;padding:8px 12px;border:1px solid rgba(0,241,52,.5);border-radius:12px;background:rgba(0,241,52,.06)}
+.kk-sonuc span{font-size:12px;color:var(--yesil);font-weight:600}.kk-sonuc b{font-size:17px}.kk-sonuc small{color:var(--mut)}
+.kk-not{list-style:none;margin:4px 0 12px;padding:0;display:flex;flex-wrap:wrap;gap:6px}.kk-not li{font-size:13px;background:rgba(216,182,122,.1);border:1px solid rgba(216,182,122,.35);border-radius:16px;padding:4px 10px}
+.kk-tablo td{vertical-align:middle}.kk-tablo small{color:var(--mut)}.kk-tablo small.ek{color:var(--kum);font-weight:600}
+.kk-tablo td.r b{color:var(--fg)}tr.kk-kazanan td{background:rgba(0,241,52,.07)}
+td.form{white-space:nowrap}td.form i{display:inline-grid;place-items:center;width:21px;height:21px;border-radius:50%;font:700 11px "Space Grotesk",Inter,sans-serif;font-style:normal;margin-right:2px}
+td.form i.f1{background:var(--yesil);color:var(--lacivert)}td.form i.f2{background:var(--kum);color:var(--lacivert)}td.form i.f3{background:rgba(238,242,246,.22)}td.form i.f4{background:rgba(238,242,246,.07);color:var(--mut)}
+.kk-sec{accent-color:var(--yesil);width:17px;height:17px}
+.kk-karsilastir{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:40;display:flex;align-items:center;gap:10px;background:var(--panel2);border:1px solid var(--line);border-radius:30px;padding:8px 10px 8px 18px;box-shadow:0 14px 40px rgba(0,0,0,.5);font-size:14px}
+.kk-karsilastir[hidden]{display:none}.kk-karsilastir .btn{background:var(--yesil);color:var(--lacivert)}.kk-karsilastir .btn:disabled{opacity:.5}.kk-karsilastir .ikincil{background:transparent;color:var(--mut);border:1px solid var(--line)}
+.kars-tablo th{font-size:15px;color:var(--fg);font-weight:700;white-space:normal}.kars-tablo td{white-space:normal}.kars-tablo td.kars-k{color:var(--mut);font-size:13px;width:22%}
+.kars-tablo td.pos{color:var(--yesil)}
+.kars-onizleme{width:100%;height:auto;margin-top:14px;border-radius:10px;border:1px solid var(--line)}
+.kars-giris input{min-width:170px}
 .cikis{display:block;margin:-28px auto 30px;max-width:1140px;width:calc(100% - 40px);text-align:left;background:none;border:0;color:var(--mut);font:inherit;font-size:12px;text-decoration:underline;cursor:pointer;padding:0}
 </style>
 </head>
@@ -222,6 +240,7 @@ html.kilitli .navwrap,html.kilitli main,html.kilitli footer,html.kilitli #pist{d
 </header></div>
 <div class="navwrap"><nav id="sekmeler">
 <button data-tab="genel" class="on">Özet</button>
+<button data-tab="bugun">Bugün</button>
 <button data-tab="akis">Akış Hazırlama</button>
 <button data-tab="atlar">Atlar</button>
 <button data-tab="jokey">Jokeyler</button>

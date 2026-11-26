@@ -234,6 +234,7 @@ function genel(L) {
 
 function atlar(L) {
   let h = kart('At ara', 'Adını yazın; atın bu yılki bütün koşuları çıksın.', `<div class="ctl"><label>At adı<input id="atAra" placeholder="ör. MR ÇIRAK" value="${esc(durum.atAra)}"></label></div><div id="atSonuc"></div>`);
+  h += kart('At karşılaştır', '2–4 at yazın; yan yana karşılaştırma ve PNG açılsın.', `<div class="ctl kars-giris">${[1, 2, 3, 4].map((i) => `<label>${i}. at<input list="atListe" data-kars="${i}" placeholder="${i <= 2 ? 'zorunlu' : 'isteğe bağlı'}"></label>`).join('')}<button type="button" class="btn" id="karsAc">Karşılaştır</button></div><datalist id="atListe">${[...new Set(rows.map((r) => r.at))].sort((a, b) => a.localeCompare(b, 'tr')).map((a) => `<option value="${esc(a)}">`).join('')}</datalist>`);
   // en çok kazanan
   const g = grupla(L, (r) => r.k);
   const ad = (o) => o.k.split('|')[0], baba = (o) => o.k.split('|')[1];
@@ -433,13 +434,15 @@ function sonuc(L) {
 // ---------- çizim ----------
 function ciz() {
   const L = suzulmus(), el = $('icerik');
-  $('filtreler').hidden = sekme === 'oneri' || sekme === 'tum' || sekme === 'akis';
+  $('filtreler').hidden = sekme === 'oneri' || sekme === 'tum' || sekme === 'akis' || sekme === 'bugun';
   if (sekme === 'oneri') { el.innerHTML = '<div id="oneriAlan"></div>'; if (window.tjkOneri) window.tjkOneri.baslat(); }
+  else if (sekme === 'bugun') { el.innerHTML = '<div id="bugunAlan"></div>'; if (window.tjkBugun) window.tjkBugun.baslat(); }
   else if (sekme === 'akis') { el.innerHTML = '<div id="akisAlan"></div>'; if (window.tjkAkis) window.tjkAkis.baslat(); }
   else if (sekme === 'tum') { el.innerHTML = '<div id="tumAlan"></div>'; if (window.tjkTum) window.tjkTum.baslat(); }
   else el.innerHTML = {genel, atlar, jokey: jokeyler, antr: antrenorler, yetis, kosul, sonuc}[sekme](L);
   if (sekme === 'genel') pist();
   $('aprHepsi')?.addEventListener('change', (e) => { durum.aprHepsi = e.target.checked; ciz(); });
+  $('karsAc')?.addEventListener('click', () => { const a = [...document.querySelectorAll('[data-kars]')].map((i) => U(i.value)).filter(Boolean); if (a.length < 2) { alert('En az iki at yazın.'); return; } window.tjkKarsilastir?.ac(a); });
   if (sekme === 'atlar') { atKarnesi(); baglaArama('atAra', 'atAra', atKarnesi); }
   if (sekme === 'jokey' || sekme === 'antr') {
     kisiKarnesi(); baglaArama('kisiAra', 'kisiAra', kisiKarnesi);
@@ -477,5 +480,5 @@ function pist() {
   pistIlk = false;
 }
 $('dipnot').textContent = `Kaynak: TJK resmi sonuçları. Son yarış günü: ${tarih(RAW.son)}. Kazanç ve kazandırdığı ikramiye: ilk 5 sıraya verilen ikramiyelerin toplamı (yetiştirici primi hariç). Jokey, antrenör ve aygır için bu, atlarının kazandığı ikramiyedir.`;
-let h0 = location.hash.slice(1); if (h0 === 'insan') h0 = 'jokey'; if (['genel', 'akis', 'atlar', 'jokey', 'antr', 'yetis', 'kosul', 'sonuc', 'tum', 'oneri'].includes(h0)) { sekme = h0; document.querySelectorAll('#sekmeler button').forEach((x) => x.classList.toggle('on', x.dataset.tab === h0)); }
+let h0 = location.hash.slice(1); if (h0 === 'insan') h0 = 'jokey'; if (['genel', 'bugun', 'akis', 'atlar', 'jokey', 'antr', 'yetis', 'kosul', 'sonuc', 'tum', 'oneri'].includes(h0)) { sekme = h0; document.querySelectorAll('#sekmeler button').forEach((x) => x.classList.toggle('on', x.dataset.tab === h0)); }
 ciz();
