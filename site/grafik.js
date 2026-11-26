@@ -71,9 +71,6 @@
     const ry = H - P - 40 * s;
     ctx.fillStyle = 'rgba(238,242,246,.55)';
     for (let x = 0; x < W; x += 34 * s) ctx.fillRect(x, ry, 22 * s, 3 * s);
-    ctx.fillStyle = RENK.mut; ctx.font = `500 ${Math.round(22 * s)}px Inter, sans-serif`;
-    ctx.fillText('Kaynak: TJK resmi sonuçları', P, ry + 38 * s);
-    ctx.textAlign = 'right'; ctx.fillText('YRŞ TYZ', W - P, ry + 38 * s); ctx.textAlign = 'left';
     return {x: P, y: P + lg + 70 * s, w: W - 2 * P, h: ry - (P + lg + 70 * s) - 36 * s, s};
   }
   function yuvarlak(ctx, x, y, w, h, r) {
