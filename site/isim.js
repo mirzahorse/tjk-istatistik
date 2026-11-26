@@ -21,7 +21,7 @@
   // sütun başlığından tür tahmini
   function basliktanTur(b) {
     b = kucuk(b);
-    if (/^jokey|kısa ad/.test(b)) return 'jokey';
+    if (/^jokey|kısa ad|^ilgili|^binici/.test(b)) return 'jokey';
     if (/antren|^ant\.?$/.test(b)) return 'antr';
     if (/aygır|^baba/.test(b)) return 'baba';
     if (/^anne|kısrak/.test(b)) return 'anne';

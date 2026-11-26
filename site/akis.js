@@ -86,6 +86,8 @@
       for (const a of ['JOKEY TABLOSU - PERFORMANSLARI', 'APRANTİ TABLOSU - PERFORMANSLARI', 'ANTRENÖR TABLOSU - PERFORMANSLARI'])
         O.push({kat: 'Değerlendirme', konu: 'DEĞERLENDİRME', goruntu: 'GRAFİK', aciklama: a, sehir: '-', tarih: '-', kosu: '-'});
     }
+    // komiser raporu (editörün aktardığı)
+    if (window.tjkKomiser) for (const o of window.tjkKomiser.oneriler(sablon)) O.push(o);
     // foto finiş: tarih, şehir ve koşu sırasına göre; değerlendirmeler en sonda
     if (sablon === 'foto') O.sort((a, b) => (a.konu === 'DEĞERLENDİRME') - (b.konu === 'DEĞERLENDİRME') || String(a._s || 'z').localeCompare(String(b._s || 'z'), 'tr'));
     return O;
@@ -129,7 +131,8 @@
           <ul>${O.map((o, i) => `<li class="${varMi.has(o.aciklama) ? 'eklendi' : ''}"><span class="kat">${e(o.kat)}</span><span>${e(o.aciklama)}</span>${o.sehir && o.sehir !== '-' ? `<small>${e(o.sehir)} · ${e(o.tarih)}${o.kosu && o.kosu !== '-' ? ' · ' + e(o.kosu) + '. koşu' : ''}</small>` : ''}<button type="button" data-oneri="${i}" ${varMi.has(o.aciklama) ? 'disabled' : ''}>${varMi.has(o.aciklama) ? 'Eklendi' : '+ Ekle'}</button></li>`).join('') || '<li class="akis-bos">Bu tarih için veriden öneri çıkmadı.</li>'}</ul>
           
         </aside>
-      </div></section>`;
+      </div></section>${window.tjkKomiser ? window.tjkKomiser.kart() : ''}`;
+    window.tjkKomiser?.bagla(ciz);
     const $ = (id) => document.getElementById(id);
     $('akSablon').addEventListener('change', (ev) => { yukle(ev.target.value, D.tarih); ciz(); });
     $('akTarih').addEventListener('change', (ev) => { if (!ev.target.value) return; yukle(D.sablon, ev.target.value); ciz(); });
