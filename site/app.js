@@ -434,8 +434,9 @@ function sonuc(L) {
 // ---------- çizim ----------
 function ciz() {
   const L = suzulmus(), el = $('icerik');
-  $('filtreler').hidden = sekme === 'oneri' || sekme === 'tum' || sekme === 'akis' || sekme === 'bugun';
-  if (sekme === 'oneri') { el.innerHTML = '<div id="oneriAlan"></div>'; if (window.tjkOneri) window.tjkOneri.baslat(); }
+  $('filtreler').hidden = sekme === 'video' || sekme === 'oneri' || sekme === 'tum' || sekme === 'akis' || sekme === 'bugun';
+  if (sekme === 'video') { el.innerHTML = '<div id="videoAlan"></div>'; if (window.tjkVideo) window.tjkVideo.baslat(); }
+  else if (sekme === 'oneri') { el.innerHTML = '<div id="oneriAlan"></div>'; if (window.tjkOneri) window.tjkOneri.baslat(); }
   else if (sekme === 'bugun') { el.innerHTML = '<div id="bugunAlan"></div>'; if (window.tjkBugun) window.tjkBugun.baslat(); }
   else if (sekme === 'akis') { el.innerHTML = '<div id="akisAlan"></div>'; if (window.tjkAkis) window.tjkAkis.baslat(); }
   else if (sekme === 'tum') { el.innerHTML = '<div id="tumAlan"></div>'; if (window.tjkTum) window.tjkTum.baslat(); }
@@ -480,5 +481,5 @@ function pist() {
   pistIlk = false;
 }
 $('dipnot').textContent = `Kaynak: TJK resmi sonuçları. Son yarış günü: ${tarih(RAW.son)}. Kazanç ve kazandırdığı ikramiye: ilk 5 sıraya verilen ikramiyelerin toplamı (yetiştirici primi hariç). Jokey, antrenör ve aygır için bu, atlarının kazandığı ikramiyedir.`;
-let h0 = location.hash.slice(1); if (h0 === 'insan') h0 = 'jokey'; if (['genel', 'bugun', 'akis', 'atlar', 'jokey', 'antr', 'yetis', 'kosul', 'sonuc', 'tum', 'oneri'].includes(h0)) { sekme = h0; document.querySelectorAll('#sekmeler button').forEach((x) => x.classList.toggle('on', x.dataset.tab === h0)); }
+let h0 = location.hash.slice(1); if (h0 === 'insan') h0 = 'jokey'; if (['genel', 'bugun', 'akis', 'atlar', 'jokey', 'antr', 'yetis', 'kosul', 'sonuc', 'tum', 'oneri', 'video'].includes(h0)) { sekme = h0; document.querySelectorAll('#sekmeler button').forEach((x) => x.classList.toggle('on', x.dataset.tab === h0)); }
 ciz();
