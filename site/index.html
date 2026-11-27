@@ -65,9 +65,23 @@ nav::-webkit-scrollbar{display:none}
 nav button{background:none;border:0;border-bottom:2px solid transparent;color:var(--mut);font-size:15px;font-weight:600;padding:15px 10px 13px;cursor:pointer;white-space:nowrap;letter-spacing:-.005em}
 nav button:hover{color:var(--fg)}
 nav button.on{color:var(--fg);border-color:var(--yesil)}
+#bolumler button{font-size:15px;padding:12px 12px 10px}
+.altwrap{display:flex;align-items:center;gap:8px;max-width:1180px;margin:0 auto;padding:0 14px 8px}
+.altwrap[hidden],nav[hidden]{display:none}
+nav.alt{flex:1;padding:0;gap:6px;margin:0}
+nav.alt button{font-size:13px;font-weight:500;padding:5px 12px;border:1px solid var(--line);border-radius:20px}
+nav.alt button.on{border-color:var(--yesil);color:var(--yesil)}
+nav.alt button.gizle{display:none}
+.filtre-ac{flex:none;background:none;border:1px solid var(--line);color:var(--mut);font:inherit;font-size:13px;padding:5px 12px;border-radius:20px;cursor:pointer}
+.filtre-ac.dolu{border-color:var(--yesil);color:var(--yesil)}
+.filtre-ac[hidden]{display:none}
+.filters[hidden]{display:none}
+.tw.kisa tr.fazla{display:none}
+.tumu-gor{display:block;margin:8px auto 0;background:none;border:1px solid var(--line);color:var(--fg);font:inherit;font-size:13px;padding:6px 14px;border-radius:20px;cursor:pointer}
+.tumu-gor:hover{border-color:var(--yesil);color:var(--yesil)}
 
-main{max-width:1180px;margin:0 auto;padding:24px 20px 48px}
-.filters{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:end;background:transparent;border:0;border-bottom:1px solid var(--line);border-radius:0;padding:0 0 18px;margin-bottom:22px}
+main{max-width:1180px;margin:0 auto;padding:16px 20px 40px}
+.filters{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:end;background:transparent;border:0;border-bottom:1px solid var(--line);border-radius:0;padding:0 0 14px;margin-bottom:16px}
 .filters label,.ctl label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mut)}
 select,input{font:inherit;font-size:14px;color:var(--fg);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 10px;min-width:0;color-scheme:dark}
 select:hover,input:hover{border-color:#2A3D60}
@@ -89,10 +103,10 @@ tr.sec td{background:var(--panel2)}.tik a{color:inherit;text-decoration:none;bor
 @media (max-width:620px){.tile{border-left:0;border-top:1px solid var(--line);padding-left:0}.tile:first-child{border-top:0}}
 
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--R);padding:18px 20px;min-width:0;margin-bottom:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--R);padding:14px 16px;min-width:0;margin-bottom:12px}
 .grid .card{margin-bottom:0}
 .grid+.card,.card+.grid,.grid+.grid{margin-top:16px}
-.card h2{font-size:18px;margin:0 0 4px;font-weight:600;letter-spacing:-.015em}
+.card h2{font-size:16px;margin:0 0 4px;font-weight:600;letter-spacing:-.015em}
 .card .d{font-size:13px;color:var(--mut);margin:0 0 14px;max-width:72ch}
 .card .d b{color:var(--fg)}
 .ctl{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:end;margin-bottom:12px}
@@ -248,22 +262,28 @@ td.form i.f1{background:var(--yesil);color:var(--lacivert)}td.form i.f2{backgrou
 <input id="araGenel" type="search" placeholder="At, jokey, antrenör, aygır ara…" autocomplete="off" enterkeyhint="search" aria-controls="araSonuc" aria-expanded="false"><button type="button" id="araDugme" class="ara-dugme">Ara</button>
 <div id="araSonuc" class="ara-sonuc" role="listbox" hidden></div></div>
 </header></div>
-<div class="navwrap"><nav id="sekmeler">
-<button data-tab="genel" class="on">Özet</button>
-<button data-tab="bugun">Bugün</button>
-<button data-tab="akis">Akış Hazırlama</button>
-<button data-tab="oneri">İçerik Önerileri</button>
-<button data-tab="video">Videolar</button>
-<button data-tab="atlar">Atlar</button>
-<button data-tab="jokey">Jokeyler</button>
-<button data-tab="antr">Antrenörler</button>
-<button data-tab="yetis">Aygırlar</button>
-<button data-tab="kosul">Analiz</button>
-<button data-tab="sonuc">Sonuçlar</button>
-<button data-tab="tum">Tüm zamanlar</button>
-</nav></div>
+<div class="navwrap"><nav id="bolumler" aria-label="Bölümler">
+<button data-b="bugun" class="on">Bugün</button>
+<button data-b="hazirlik">Hazırlık</button>
+<button data-b="istatistik">İstatistik</button>
+<button data-b="video">Videolar</button>
+</nav>
+<div class="altwrap"><nav id="sekmeler" class="alt" aria-label="Sayfalar">
+<button data-tab="genel" data-b="bugun" class="on">Özet</button>
+<button data-tab="bugun" data-b="bugun">Koşu kartları</button>
+<button data-tab="akis" data-b="hazirlik">Akış hazırlama</button>
+<button data-tab="oneri" data-b="hazirlik">İçerik önerileri</button>
+<button data-tab="jokey" data-b="istatistik">Jokeyler</button>
+<button data-tab="antr" data-b="istatistik">Antrenörler</button>
+<button data-tab="atlar" data-b="istatistik">Atlar</button>
+<button data-tab="yetis" data-b="istatistik">Aygırlar</button>
+<button data-tab="kosul" data-b="istatistik">Analiz</button>
+<button data-tab="sonuc" data-b="istatistik">Sonuçlar</button>
+<button data-tab="tum" data-b="istatistik">Tüm zamanlar</button>
+<button data-tab="video" data-b="video">Videolar</button>
+</nav><button type="button" id="filtreAc" class="filtre-ac" aria-expanded="false" aria-controls="filtreler">Filtrele</button></div></div>
 <main>
-<div class="filters" id="filtreler">
+<div class="filters" id="filtreler" hidden>
 <label>Başlangıç<input type="date" id="f_bas"></label>
 <label>Bitiş<input type="date" id="f_bit"></label>
 <div class="ms" data-k="hip" data-ad="Hipodrom"></div>

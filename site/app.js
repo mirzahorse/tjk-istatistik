@@ -102,9 +102,16 @@ function cizgi(pts, o = {}) { // pts: [{x: label, y}]
 function tablo(cols, list, o = {}) { // cols: [[başlık, fn(row), sağa?, sınıf fn?]]
   if (!list.length) return `<div class="empty">${o.bos || 'Bu filtrelerle sonuç yok.'}</div>`;
   let s = `<div class="tw${o.tall ? ' tall' : ''}"><table><thead><tr>${cols.map((c) => `<th${c[2] ? ' class="r"' : ''}>${esc(c[0])}</th>`).join('')}</tr></thead><tbody>`;
-  list.forEach((r, i) => { s += '<tr>' + cols.map((c) => { const v = c[1](r, i), cl = [c[2] ? 'r' : '', c[3] ? c[3](r) : ''].filter(Boolean).join(' '); return `<td${cl ? ` class="${cl}"` : ''}>${esc(v)}</td>`; }).join('') + '</tr>'; });
-  return s + '</tbody></table></div>';
+  const kisa = list.length > 15 && !o.hepsi && cols[0][0] !== 'Sıra';
+  if (kisa) s = s.replace('<div class="tw', '<div class="tw kisa');
+  list.forEach((r, i) => { s += `<tr${kisa && i >= 10 ? ' class="fazla"' : ''}>` + cols.map((c) => { const v = c[1](r, i), cl = [c[2] ? 'r' : '', c[3] ? c[3](r) : ''].filter(Boolean).join(' '); return `<td${cl ? ` class="${cl}"` : ''}>${esc(v)}</td>`; }).join('') + '</tr>'; });
+  return s + '</tbody></table></div>' + (kisa ? `<button type="button" class="tumu-gor">Tümünü gör (${N(list.length)})</button>` : '');
 }
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('.tumu-gor'); if (!b) return;
+  const tw = b.previousElementSibling; const ac = tw.classList.toggle('kisa');
+  b.textContent = ac ? `Tümünü gör (${N(tw.querySelectorAll('tbody tr').length)})` : 'Daha az göster';
+});
 const kart = (baslik, aciklama, govde, id = '') => `<section class="card"${id ? ` id="${id}"` : ''}><h2>${esc(baslik)}</h2>${aciklama ? `<p class="d">${esc(aciklama)}</p>` : ''}${govde}</section>`;
 const kutu = (k, v, s = '') => `<div class="tile"><div class="k">${esc(k)}</div><div class="v">${esc(v)}</div>${s ? `<div class="s">${esc(s)}</div>` : ''}</div>`;
 const karCls = (r) => (r.kar > 0 ? 'pos' : r.kar < 0 ? 'neg' : '');
@@ -183,9 +190,28 @@ function suzulmus() {
 // ---------- sekmeler ----------
 let sekme = 'genel';
 const durum = {atAra: '', atSec: '', olcutJ: 'bir', olcutA: 'bir', kisiAra: '', aygirAra: '', kisrakAra: ''};
+// 4 ana bölüm; her bölüm son açılan sayfayı hatırlar
+const sonSayfa = {bugun: 'genel', hazirlik: 'akis', istatistik: 'jokey', video: 'video'};
+const FILTRESIZ = ['video', 'oneri', 'tum', 'akis', 'bugun'];
+function bolumGoster(tab) {
+  const btn = document.querySelector(`#sekmeler button[data-tab="${tab}"]`), b = btn.dataset.b;
+  sonSayfa[b] = tab;
+  document.querySelectorAll('#bolumler button').forEach((x) => x.classList.toggle('on', x.dataset.b === b));
+  const alt = document.querySelectorAll('#sekmeler button');
+  alt.forEach((x) => { x.classList.toggle('gizle', x.dataset.b !== b); x.classList.toggle('on', x === btn); });
+  const tek = [...alt].filter((x) => x.dataset.b === b).length < 2, filtresiz = FILTRESIZ.includes(tab);
+  $('sekmeler').hidden = tek; $('filtreAc').hidden = filtresiz;
+  $('sekmeler').parentElement.hidden = tek && filtresiz;
+}
 document.querySelectorAll('#sekmeler button').forEach((b) => b.addEventListener('click', () => {
-  sekme = b.dataset.tab; window.tjkIzle?.(b.textContent.trim()); document.querySelectorAll('#sekmeler button').forEach((x) => x.classList.toggle('on', x === b)); ciz(); history.replaceState(null, '', '#' + sekme);
+  sekme = b.dataset.tab; window.tjkIzle?.(b.textContent.trim()); bolumGoster(sekme); ciz(); history.replaceState(null, '', '#' + sekme);
 }));
+document.querySelectorAll('#bolumler button').forEach((b) => b.addEventListener('click', () => {
+  document.querySelector(`#sekmeler button[data-tab="${sonSayfa[b.dataset.b]}"]`).click();
+}));
+$('filtreAc').addEventListener('click', () => {
+  const ac = $('filtreler').hidden; $('filtreler').hidden = !ac; $('filtreAc').setAttribute('aria-expanded', String(ac));
+});
 
 // ---------- jokey olmaya kalan (apranti) ----------
 // TJK listesinin son kopyası + o tarihten sonraki apranti galibiyetleri (her saat güncellenen veriden)
@@ -434,7 +460,7 @@ function sonuc(L) {
 // ---------- çizim ----------
 function ciz() {
   const L = suzulmus(), el = $('icerik');
-  $('filtreler').hidden = sekme === 'video' || sekme === 'oneri' || sekme === 'tum' || sekme === 'akis' || sekme === 'bugun';
+  if (FILTRESIZ.includes(sekme)) $('filtreler').hidden = true;
   if (sekme === 'video') { el.innerHTML = '<div id="videoAlan"></div>'; if (window.tjkVideo) window.tjkVideo.baslat(); }
   else if (sekme === 'oneri') { el.innerHTML = '<div id="oneriAlan"></div>'; if (window.tjkOneri) window.tjkOneri.baslat(); }
   else if (sekme === 'bugun') { el.innerHTML = '<div id="bugunAlan"></div>'; if (window.tjkBugun) window.tjkBugun.baslat(); }
@@ -455,6 +481,7 @@ function ciz() {
   if (sekme === 'yetis') { aygirKarnesi(); kisrakKarnesi(); baglaArama('aygirAra', 'aygirAra', aygirKarnesi); baglaArama('kisrakAra', 'kisrakAra', kisrakKarnesi); }
   const f = Object.values(F).filter((v) => (Array.isArray(v) ? v.length : v)).length;
   $('temizle').hidden = !f;
+  $('filtreAc').textContent = f ? `Filtrele (${f})` : 'Filtrele'; $('filtreAc').classList.toggle('dolu', !!f);
   $('ozetSatir').textContent = `TJK 2026 · ${tarih(RAW.son)} tarihine kadar${f ? ' · ' + f + ' filtre açık' : ''}`;
 }
 function baglaArama(id, key, fn) {
@@ -481,5 +508,6 @@ function pist() {
   pistIlk = false;
 }
 $('dipnot').textContent = `Kaynak: TJK resmi sonuçları. Son yarış günü: ${tarih(RAW.son)}. Kazanç ve kazandırdığı ikramiye: ilk 5 sıraya verilen ikramiyelerin toplamı (yetiştirici primi hariç). Jokey, antrenör ve aygır için bu, atlarının kazandığı ikramiyedir.`;
-let h0 = location.hash.slice(1); if (h0 === 'insan') h0 = 'jokey'; if (['genel', 'bugun', 'akis', 'atlar', 'jokey', 'antr', 'yetis', 'kosul', 'sonuc', 'tum', 'oneri', 'video'].includes(h0)) { sekme = h0; document.querySelectorAll('#sekmeler button').forEach((x) => x.classList.toggle('on', x.dataset.tab === h0)); }
+let h0 = location.hash.slice(1); if (h0 === 'insan') h0 = 'jokey'; if (!['genel', 'bugun', 'akis', 'atlar', 'jokey', 'antr', 'yetis', 'kosul', 'sonuc', 'tum', 'oneri', 'video'].includes(h0)) h0 = sekme; sekme = h0;
+bolumGoster(sekme);
 ciz();
