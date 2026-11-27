@@ -291,7 +291,7 @@
   ac.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>Mirza\'ya Sor';
   const kutu = document.createElement('div');
   kutu.className = 'bot'; kutu.hidden = true; kutu.setAttribute('role', 'dialog'); kutu.setAttribute('aria-label', "Mirza'ya Sor");
-  kutu.innerHTML = `<div class="bot-bas"><img src="logo.png" alt=""><b>Mirza'ya Sor<small>2026 verisinden cevaplar</small></b><button type="button" aria-label="Kapat">×</button></div>
+  kutu.innerHTML = `<div class="bot-bas"><b>Mirza'ya Sor<small>2026 verisinden cevaplar</small></b><button type="button" aria-label="Kapat">×</button></div>
     <div class="bot-msj" aria-live="polite"></div>
     <form class="bot-gir"><input placeholder="Sorunuzu yazın…" aria-label="Soru" autocomplete="off"><button>Sor</button></form>`;
   document.body.append(ac, kutu);

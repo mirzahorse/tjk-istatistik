@@ -60,17 +60,14 @@
     g.addColorStop(0, 'rgba(216,182,122,.10)'); g.addColorStop(1, 'rgba(216,182,122,0)'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
     const P = Math.round(W * 0.05), s = W / 1920 * (W < H ? 1.5 : 1);
     const lg = Math.round(84 * s);
-    ctx.fillStyle = RENK.yesil; yuvarlak(ctx, P, P, lg, lg, 16 * s); ctx.fill();
-    if (logo.complete && logo.naturalWidth) ctx.drawImage(logo, P + lg * 0.1, P + lg * 0.1, lg * 0.8, lg * 0.8);
+    ctx.fillStyle = RENK.yesil; yuvarlak(ctx, P, P + 6 * s, 8 * s, lg - 12 * s, 4 * s); ctx.fill();
     ctx.fillStyle = RENK.fg; ctx.font = `700 ${Math.round(60 * s)}px "Space Grotesk", Inter, sans-serif`; ctx.textBaseline = 'alphabetic';
-    const tx = P + lg + 28 * s;
+    const tx = P + 30 * s;
     ctx.fillText(kirp(ctx, baslik, W - tx - P), tx, P + lg * 0.55);
     ctx.fillStyle = RENK.mut; ctx.font = `500 ${Math.round(28 * s)}px Inter, sans-serif`;
     ctx.fillText(kirp(ctx, alt, W - tx - P), tx, P + lg * 0.55 + 44 * s);
     // pist rayı ve dipnot
     const ry = H - P - 40 * s;
-    ctx.fillStyle = 'rgba(238,242,246,.55)';
-    for (let x = 0; x < W; x += 34 * s) ctx.fillRect(x, ry, 22 * s, 3 * s);
     return {x: P, y: P + lg + 70 * s, w: W - 2 * P, h: ry - (P + lg + 70 * s) - 36 * s, s};
   }
   function yuvarlak(ctx, x, y, w, h, r) {

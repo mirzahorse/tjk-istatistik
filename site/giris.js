@@ -86,7 +86,6 @@
     const d = document.createElement('div');
     d.id = 'kapi';
     d.innerHTML = `<form class="kapi-kutu" autocomplete="on">
-      <img src="logo.png" alt="YRŞ TYZ" width="52" height="52">
       <h2>Editör Paneli</h2>
       <p>Bu sayfa üyelere açık. Size verilen kullanıcı adı ve şifreyle girin.</p>
       <label>Kullanıcı adı<input name="username" id="kAd" autocomplete="username" autocapitalize="none" spellcheck="false" required></label>
