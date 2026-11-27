@@ -82,7 +82,7 @@
     if (tur === 'at') { at = at && atlar.includes(at) ? at : atlar[0]; L = L.filter((r) => r.k === at); }
     L = [...L].sort((a, b) => (a.rc.tarih < b.rc.tarih ? 1 : a.rc.tarih > b.rc.tarih ? -1 : 0));
     const kaz = L.filter((r) => r.w), i3 = L.filter((r) => r.i3);
-    let h = `<div class="karne-ust"><div><span class="karne-tur">${TUR[tur].ad}</span><h2>${esc(ad)}</h2></div><div class="karne-dug"><button type="button" class="png-btn karne-png" title="Profil kartını PNG olarak indir">PNG</button><button type="button" class="karne-kapat" aria-label="Kapat">✕</button></div></div>`;
+    let h = `<div class="karne-ust"><img class="karne-foto" alt="" hidden><div class="karne-ad"><span class="karne-tur">${TUR[tur].ad}</span><h2>${esc(ad)}</h2></div><div class="karne-dug"><button type="button" class="png-btn karne-png" title="Profil kartını PNG olarak indir">PNG</button><button type="button" class="karne-kapat" aria-label="Kapat">✕</button></div></div>`;
     if (atlar.length > 1) h += `<div class="chips">${atlar.map((k) => `<button class="chip${k === at ? ' on' : ''}" data-karne-at="${esc(k)}">${esc(k.split('|')[1])} – ${esc(k.split('|')[2])}</button>`).join('')}</div>`;
     if (tur === 'at' && L[0]) {
       const s = L[0];
@@ -113,7 +113,12 @@
     }
     panel.innerHTML = h; panel.scrollTop = 0;
     panel.querySelector('.karne-kapat').addEventListener('click', kapat);
-    panel.querySelector('.karne-png').addEventListener('click', () => window.tjkGrafik?.profil(profilVeri(ad, tur, L)));
+    panel.querySelector('.karne-png').addEventListener('click', async () => {
+      const P = profilVeri(ad, tur, L);
+      if (tur === 'jokey') P.foto = await window.tjkFoto?.(ad);
+      window.tjkGrafik?.profil(P);
+    });
+    if (tur === 'jokey') window.tjkFoto?.(ad).then((u) => { const im = panel.querySelector('.karne-foto'); if (u && im && panel.contains(im)) { im.src = u; im.alt = ad; im.hidden = false; } });
     panel.querySelectorAll('[data-karne-at]').forEach((b) => b.addEventListener('click', () => ac(ad, 'at', b.dataset.karneAt)));
     panel.querySelectorAll('[data-karne-git]').forEach((b) => b.addEventListener('click', () => {
       const hedef = b.dataset.karneGit; kapat();

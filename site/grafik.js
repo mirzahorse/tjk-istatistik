@@ -51,7 +51,7 @@
     while (s.length > 1 && ctx.measureText(s + '…').width > w) s = s.slice(0, -1);
     return s + '…';
   }
-  function zemin(ctx, W, H, baslik, alt) {
+  function zemin(ctx, W, H, baslik, alt, foto) {
     ctx.fillStyle = RENK.bg; ctx.fillRect(0, 0, W, H);
     let g = ctx.createRadialGradient(W * 0.88, -H * 0.1, 0, W * 0.88, -H * 0.1, W * 0.7);
     g.addColorStop(0, 'rgba(0,241,52,.20)'); g.addColorStop(1, 'rgba(0,241,52,0)'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
@@ -59,9 +59,17 @@
     g.addColorStop(0, 'rgba(216,182,122,.10)'); g.addColorStop(1, 'rgba(216,182,122,0)'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
     const P = Math.round(W * 0.05), s = W / 1920 * (W < H ? 1.5 : 1);
     const lg = Math.round(84 * s);
-    ctx.fillStyle = RENK.yesil; yuvarlak(ctx, P, P + 6 * s, 8 * s, lg - 12 * s, 4 * s); ctx.fill();
+    let tx = P + 30 * s;
+    if (foto) {
+      // yuvarlak portre: fotoğrafın üst-orta kısmı (baş ve omuz)
+      const D = Math.round(lg * 1.6), y0 = P + lg * 0.42 - D / 2 + 10 * s, kw = foto.naturalWidth * 0.58;
+      ctx.save(); ctx.beginPath(); ctx.arc(P + D / 2, y0 + D / 2, D / 2, 0, Math.PI * 2); ctx.clip();
+      ctx.fillStyle = '#fff'; ctx.fillRect(P, y0, D, D);
+      ctx.drawImage(foto, (foto.naturalWidth - kw) / 2, foto.naturalHeight * 0.02, kw, kw, P, y0, D, D); ctx.restore();
+      ctx.strokeStyle = RENK.yesil; ctx.lineWidth = 4 * s; ctx.beginPath(); ctx.arc(P + D / 2, y0 + D / 2, D / 2 - 2 * s, 0, Math.PI * 2); ctx.stroke();
+      tx = P + D + 28 * s;
+    } else { ctx.fillStyle = RENK.yesil; yuvarlak(ctx, P, P + 6 * s, 8 * s, lg - 12 * s, 4 * s); ctx.fill(); }
     ctx.fillStyle = RENK.fg; ctx.font = `600 ${Math.round(60 * s)}px Inter, sans-serif`; ctx.textBaseline = 'alphabetic';
-    const tx = P + 30 * s;
     ctx.fillText(kirp(ctx, baslik, W - tx - P), tx, P + lg * 0.55);
     ctx.fillStyle = RENK.mut; ctx.font = `600 ${Math.round(28 * s)}px Inter, sans-serif`;
     ctx.fillText(kirp(ctx, alt, W - tx - P), tx, P + lg * 0.55 + 44 * s);
@@ -269,7 +277,9 @@
   async function profilCiz(canvas, P, boyut) {
     const [W, H] = BOYUT[boyut]; canvas.width = W; canvas.height = H;
     try { await Promise.all([document.fonts.load('600 60px Inter')]); } catch (err) {}
-    const ctx = canvas.getContext('2d'), A = zemin(ctx, W, H, P.ad, P.rol), s = A.s;
+    let foto = null;
+    if (P.foto) { foto = new Image(); foto.src = P.foto; try { await foto.decode(); } catch (err) { foto = null; } }
+    const ctx = canvas.getContext('2d'), A = zemin(ctx, W, H, P.ad, P.rol, foto), s = A.s;
     const genis = A.w > A.h * 1.4, bos = 28 * s;
     if (P.dipnot) { ctx.fillStyle = RENK.mut; ctx.font = `600 ${Math.round(22 * s)}px Inter, sans-serif`; ctx.textAlign = 'center'; ctx.fillText(P.dipnot, W / 2, H - Math.round(W * 0.05) - 40 * s + 38 * s); ctx.textAlign = 'left'; }
     const alt = P.form ? (cx, cy, cw, ch) => formCiz(ctx, cx, cy, cw, ch, 'Son koşuları (soldan sağa eskiden yeniye)', P.form, s)

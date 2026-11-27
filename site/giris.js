@@ -27,6 +27,27 @@
     return crypto.subtle.decrypt({name: 'AES-GCM', iv: b.slice(0, 12)}, anahtar, b.slice(12));
   }
   // diğer dosyalar (tum.js) şifreli dosyaları bununla açar
+  // jokey fotoğrafları: site/foto/liste.json (kısa ad -> kod), her dosya kendi kilitli anahtarıyla şifreli
+  let fotoAnahtar = null, fotoListe = null;
+  const fotoBellek = new Map();
+  window.tjkFotoVar = async (ad) => {
+    if (!fotoListe) fotoListe = fetch('foto/liste.json', {cache: 'no-cache'}).then((r) => (r.ok ? r.json() : {})).catch(() => ({}));
+    return !!(await fotoListe)[ad];
+  };
+  window.tjkFoto = (ad) => {
+    if (fotoBellek.has(ad)) return fotoBellek.get(ad);
+    const is = (async () => {
+      if (!fotoAnahtar || !(await window.tjkFotoVar(ad))) return null;
+      const kod = (await fotoListe)[ad];
+      const b = new Uint8Array(await fetch('foto/' + kod + '.enc').then((r) => r.arrayBuffer()));
+      const n = (b[0] << 8) | b[1];
+      const ham = await crypto.subtle.decrypt({name: 'RSA-OAEP'}, fotoAnahtar, b.slice(2, 2 + n));
+      const k = await crypto.subtle.importKey('raw', ham, 'AES-GCM', false, ['decrypt']);
+      const jpg = await crypto.subtle.decrypt({name: 'AES-GCM', iv: b.slice(2 + n, 14 + n)}, k, b.slice(14 + n));
+      return URL.createObjectURL(new Blob([jpg], {type: 'image/jpeg'}));
+    })().catch(() => null);
+    fotoBellek.set(ad, is); return is;
+  };
   window.tjkCoz = async (url) => {
     const r = await fetch(url, {cache: 'no-cache'});
     if (!r.ok) throw new Error(url + ': ' + r.status);
@@ -46,6 +67,7 @@
   }
   async function anahtarYap(ozelDer) {
     const ozel = await crypto.subtle.importKey('pkcs8', ozelDer, {name: 'RSA-OAEP', hash: 'SHA-256'}, false, ['decrypt']);
+    fotoAnahtar = ozel;
     const kilitli = await fetch('anahtar.bin', {cache: 'no-cache'}).then((r) => { if (!r.ok) throw new Error('anahtar.bin ' + r.status); return r.arrayBuffer(); });
     const ham = await crypto.subtle.decrypt({name: 'RSA-OAEP'}, ozel, kilitli);
     return crypto.subtle.importKey('raw', ham, 'AES-GCM', false, ['decrypt']);
