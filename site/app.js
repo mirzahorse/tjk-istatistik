@@ -467,7 +467,7 @@ function ciz() {
   else if (sekme === 'akis') { el.innerHTML = '<div id="akisAlan"></div>'; if (window.tjkAkis) window.tjkAkis.baslat(); }
   else if (sekme === 'tum') { el.innerHTML = '<div id="tumAlan"></div>'; if (window.tjkTum) window.tjkTum.baslat(); }
   else el.innerHTML = {genel, atlar, jokey: jokeyler, antr: antrenorler, yetis, kosul, sonuc}[sekme](L);
-  if (sekme === 'genel') pist();
+  if (sekme === 'genel') { pist(); window.tjkKomiser?.cezaYerlestir(); }
   $('aprHepsi')?.addEventListener('change', (e) => { durum.aprHepsi = e.target.checked; ciz(); });
   $('karsAc')?.addEventListener('click', () => { const a = [...document.querySelectorAll('[data-kars]')].map((i) => U(i.value)).filter(Boolean); if (a.length < 2) { alert('En az iki at yazın.'); return; } window.tjkKarsilastir?.ac(a); });
   if (sekme === 'atlar') { atKarnesi(); baglaArama('atAra', 'atAra', atKarnesi); }

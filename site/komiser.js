@@ -10,6 +10,71 @@
   // yer imi: sayfadaki tabloları JSON olarak panoya kopyalar
   const YERIMI = `javascript:(()=>{const t=[...document.querySelectorAll('table')].map(x=>({bas:[...x.querySelectorAll('thead th')].map(h=>h.innerText.trim()),satir:[...x.querySelectorAll('tbody tr')].map(r=>[...r.children].map(c=>c.innerText.trim().replace(/\\s+/g,' ')))})).filter(x=>x.satir.length);const b=[...document.querySelectorAll('h1,h2,h3')].map(h=>h.innerText.trim()).filter(Boolean).slice(0,3).join(' · ');const s=[...document.querySelectorAll('select')].map(x=>x.options[x.selectedIndex]?.text).filter(Boolean).join(' · ');const v=JSON.stringify({k:'tjk-komiser',url:location.href,zaman:new Date().toISOString(),baslik:b,secim:s,tablolar:t});const n=t.reduce((a,x)=>a+x.satir.length,0);const ok=()=>alert('Editör Paneli: '+n+' satır kopyalandı. Panelde Akış Hazırlama → Komiser raporunu al.');if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(v).then(ok,()=>prompt('Kopyalayın (Ctrl/Cmd+C):',v))}else{prompt('Kopyalayın (Ctrl/Cmd+C):',v)}})();`;
 
+  // ---------- cezalı jokeyler: aktarılan raporlardan biriken "men" cezaları + elle girilenler ----------
+  const GECMIS = 'tjk_cezalar_v1';
+  const MEN = /men|sanat icras|yasakl/i;
+  const gOku = () => { try { return JSON.parse(localStorage.getItem(GECMIS) || '[]'); } catch (err) { return []; } };
+  const gYaz = (v) => { try { localStorage.setItem(GECMIS, JSON.stringify(v)); } catch (err) {} };
+  const iso = (t) => { const m = String(t || '').match(/(\d{1,2})[./](\d{1,2})[./](\d{4})/); return m ? `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}` : ''; };
+  const gunEkle = (i, n) => { const t = new Date(i + 'T12:00:00'); t.setDate(t.getDate() + n); return t.toISOString().slice(0, 10); };
+  const bugun = () => { const t = new Date(); return new Date(t.getTime() - t.getTimezoneOffset() * 6e4).toISOString().slice(0, 10); };
+  const trTarih = (i) => (i ? i.split('-').reverse().join('.') : '—');
+  function cezaCikar(R) {
+    const T = tablo(R); if (!T) return [];
+    const C = [];
+    for (const r of T.satir) {
+      const g = (k) => (T.s[k] >= 0 ? r[T.s[k]] : '');
+      const metin = r.join(' '); if (!MEN.test(metin)) continue;
+      const kisi = BU(g('kisi')).trim(); if (!kisi || kisi === '-') continue;
+      const aralik = metin.match(/(\d{1,2}\.\d{1,2}\.\d{4})\s*[-–]\s*(\d{1,2}\.\d{1,2}\.\d{4})/);
+      const gun = +((metin.match(/(\d+)\s*(?:\([^)]*\)\s*)?(?:yarış\s*)?gün/i) || [])[1] || 0);
+      const olay = iso(g('tarih')) || iso(R.secim) || bugun();
+      let bas, bit, tahmin = false;
+      if (aralik) { bas = iso(aralik[1]); bit = iso(aralik[2]); } else if (gun) { bas = gunEkle(olay, 1); bit = gunEkle(bas, gun - 1); tahmin = true; } else continue;
+      C.push({kisi, olay, bas, bit, tahmin, gun, hip: g('hip'), kosu: g('kosu'), karar: g('karar') || metin});
+    }
+    return C;
+  }
+  function cezaEkle(C) {
+    const G = gOku(), var_ = new Set(G.map((c) => c.kisi + '|' + c.bas + '|' + c.bit));
+    for (const c of C) if (!var_.has(c.kisi + '|' + c.bas + '|' + c.bit)) G.push(c);
+    gYaz(G.filter((c) => c.bit >= gunEkle(bugun(), -60)));
+  }
+  const aktifCezalar = () => gOku().filter((c) => c.bit >= bugun()).sort((a, b) => (a.bit < b.bit ? -1 : 1));
+  function cezaKart() {
+    const A = aktifCezalar();
+    return `<section class="card" id="cezaKart"><h2>Cezalı jokeyler</h2>
+      <p class="d">Komiser raporlarından aktarılan men cezaları ve elle eklenenler. Ceza bitince listeden kendiliğinden düşer.</p>
+      ${A.length ? `<div class="tw"><table><thead><tr><th>Jokey</th><th>Ceza</th><th>Bitiş</th><th>Neden</th><th></th></tr></thead><tbody>${A.map((c, i) => `<tr><td><span class="isim" data-isim="${e(c.kisi)}" data-tur="jokey" role="button" tabindex="0">${e(c.kisi)}</span></td><td>${c.gun ? c.gun + ' gün' : '—'}</td><td>${trTarih(c.bit)}${c.tahmin ? ' <small class="mut" title="Raporda tarih aralığı yoktu; olay gününün ertesinden sayıldı">(tahmini)</small>' : ''}</td><td class="ceza-neden">${e(String(c.karar).slice(0, 120))}</td><td><button type="button" class="ceza-sil" data-sil="${e(c.kisi + '|' + c.bas + '|' + c.bit)}" aria-label="${e(c.kisi)} cezasını sil">✕</button></td></tr>`).join('')}</tbody></table></div>`
+        : '<p class="d km-bos">Şu an listede cezalı jokey yok. Akış hazırlama sayfasından komiser raporu aktarın ya da aşağıdan ekleyin.</p>'}
+      <details class="km-elle"><summary>Elle ekle</summary><div class="ceza-form">
+        <label>Jokey<input id="czKisi" placeholder="Örn. M.KAYA"></label>
+        <label>Gün<input id="czGun" type="number" min="1" max="365" style="width:80px"></label>
+        <label>Bitiş<input id="czBit" type="date"></label>
+        <label style="flex:1">Not<input id="czNot" placeholder="Örn. 4 gün men, İstanbul 6. koşu"></label>
+        <button type="button" class="btn" id="czEkle">Ekle</button></div></details>
+    </section>`;
+  }
+  function cezaBagla(yenile) {
+    const $ = (id) => document.getElementById(id), k = $('cezaKart'); if (!k) return;
+    k.querySelectorAll('[data-sil]').forEach((b) => b.addEventListener('click', () => { gYaz(gOku().filter((c) => c.kisi + '|' + c.bas + '|' + c.bit !== b.dataset.sil)); yenile(); }));
+    $('czGun')?.addEventListener('input', () => { const n = +$('czGun').value; if (n > 0) $('czBit').value = gunEkle(bugun(), n); });
+    $('czEkle')?.addEventListener('click', () => {
+      const kisi = BU($('czKisi').value).trim(), bit = $('czBit').value;
+      if (!kisi || !bit) { alert('Jokey adı ve bitiş tarihi gerekli.'); return; }
+      cezaEkle([{kisi, olay: bugun(), bas: bugun(), bit, tahmin: false, gun: +$('czGun').value || 0, hip: '', kosu: '', karar: $('czNot').value || 'Elle eklendi'}]);
+      yenile();
+    });
+    window.tjkIsim?.tara?.(k);
+  }
+  // Özet sayfasında "Sezonun önündekiler"in altına yerleştir
+  function cezaYerlestir() {
+    const pist = document.getElementById('pist'); if (!pist) return;
+    document.getElementById('cezaKart')?.remove();
+    pist.insertAdjacentHTML('afterend', cezaKart());
+    cezaBagla(cezaYerlestir);
+  }
+
   const oku = () => { try { return JSON.parse(localStorage.getItem(ANAHTAR) || 'null'); } catch (err) { return null; } };
   const yaz = (v) => { try { localStorage.setItem(ANAHTAR, JSON.stringify(v)); } catch (err) {} };
 
@@ -37,8 +102,10 @@
     return [yer, g('kisi') && BU(g('kisi')), g('at') && BU(g('at')), BU(karar)].filter(Boolean).join(' - ');
   }
   function oneriler(sablon) {
-    const R = oku(), T = tablo(R); if (!T) return [];
-    const O = [{kat: 'Komiser raporu', konu: sablon === 'foto' ? 'DEĞERLENDİRME' : 'ATÇILIK HABERLERİ', goruntu: 'DSF', aciklama: 'KOMİSER RAPORLARI - CEZALI JOKEY TABLOSU', sehir: '-', tarih: '-', kosu: '-'}];
+    const A = aktifCezalar(), C = A.length ? [{kat: 'Cezalı jokey', konu: sablon === 'foto' ? 'DEĞERLENDİRME' : 'ATÇILIK HABERLERİ', goruntu: 'DSF',
+      aciklama: 'CEZALI JOKEYLER: ' + A.map((c) => `${c.kisi} (${trTarih(c.bit).slice(0, 5)} DAHİL)`).join(', '), sehir: '-', tarih: '-', kosu: '-'}] : [];
+    const R = oku(), T = tablo(R); if (!T) return C;
+    const O = [...C, {kat: 'Komiser raporu', konu: sablon === 'foto' ? 'DEĞERLENDİRME' : 'ATÇILIK HABERLERİ', goruntu: 'DSF', aciklama: 'KOMİSER RAPORLARI - CEZALI JOKEY TABLOSU', sehir: '-', tarih: '-', kosu: '-'}];
     for (const r of T.satir) {
       if (!CEZA.test(r.join(' '))) continue;
       const g = (k) => (T.s[k] >= 0 ? r[T.s[k]] : '');
@@ -70,7 +137,7 @@
     const al = (metin) => {
       const R = coz(metin);
       if (!R || !tablo(R)) { alert('Rapor okunamadı. TJK sayfasında "Panele aktar"a bastığınızdan emin olun.'); return; }
-      yaz(R); yenile();
+      yaz(R); cezaEkle(cezaCikar(R)); yenile();
     };
     $('kmAl')?.addEventListener('click', async () => {
       try { al(await navigator.clipboard.readText()); } catch (err) { document.querySelector('.km-elle').open = true; $('kmMetin').focus(); }
@@ -78,5 +145,6 @@
     $('kmYapistir')?.addEventListener('click', () => al($('kmMetin').value));
     $('kmSil')?.addEventListener('click', () => { try { localStorage.removeItem(ANAHTAR); } catch (err) {} yenile(); });
   }
-  window.tjkKomiser = {kart, bagla, oneriler, coz};
+  window.tjkKomiser = {kart, bagla, oneriler, coz, cezaKart, cezaBagla, cezaYerlestir, aktifCezalar};
+  if (document.getElementById('pist')) cezaYerlestir();
 })();

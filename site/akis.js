@@ -131,8 +131,8 @@
           <ul>${O.map((o, i) => `<li class="${varMi.has(o.aciklama) ? 'eklendi' : ''}"><span class="kat">${e(o.kat)}</span><span>${e(o.aciklama)}</span>${o.sehir && o.sehir !== '-' ? `<small>${e(o.sehir)} · ${e(o.tarih)}${o.kosu && o.kosu !== '-' ? ' · ' + e(o.kosu) + '. koşu' : ''}</small>` : ''}<button type="button" data-oneri="${i}" ${varMi.has(o.aciklama) ? 'disabled' : ''}>${varMi.has(o.aciklama) ? 'Eklendi' : '+ Ekle'}</button></li>`).join('') || '<li class="akis-bos">Bu tarih için veriden öneri çıkmadı.</li>'}</ul>
           
         </aside>
-      </div></section>${window.tjkKomiser ? window.tjkKomiser.kart() : ''}`;
-    window.tjkKomiser?.bagla(ciz);
+      </div></section>${window.tjkKomiser ? window.tjkKomiser.kart() + window.tjkKomiser.cezaKart() : ''}`;
+    window.tjkKomiser?.bagla(ciz); window.tjkKomiser?.cezaBagla(ciz);
     const $ = (id) => document.getElementById(id);
     $('akSablon').addEventListener('change', (ev) => { yukle(ev.target.value, D.tarih); ciz(); });
     $('akTarih').addEventListener('change', (ev) => { if (!ev.target.value) return; yukle(D.sablon, ev.target.value); ciz(); });
