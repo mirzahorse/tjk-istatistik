@@ -1,0 +1,8 @@
+name: yoklama
+on: workflow_dispatch
+jobs:
+  y:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 yoklama.py
