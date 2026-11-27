@@ -46,7 +46,7 @@
 
   async function pngCiz(canvas, V, R, boyut) {
     const G = window.tjkGrafik._, [W, H] = G.BOYUT[boyut]; canvas.width = W; canvas.height = H;
-    try { await Promise.all([document.fonts.load('700 60px "Space Grotesk"'), document.fonts.load('600 30px Inter')]); } catch (err) {}
+    try { await Promise.all([document.fonts.load('600 60px Inter')]); } catch (err) {}
     const ctx = canvas.getContext('2d'), A = G.zemin(ctx, W, H, V.map((v) => v.ad).join(' · '), 'At karşılaştırma · ' + String(RAW.son).slice(0, 4) + ' sezonu'), s = A.s;
     const sat = R.filter((r) => r.k !== 'Baba – anne' || W > H), n = V.length;
     const lw = A.w * (W > H ? 0.24 : 0.3), cw = (A.w - lw) / n, ust = 92 * s, sh = Math.min((A.h - ust) / (sat.length + 1), 64 * s);
@@ -56,7 +56,7 @@
       const x = A.x + lw + cw * i;
       ctx.fillStyle = 'rgba(238,242,246,.05)'; G.yuvarlak(ctx, x + 8 * s, A.y, cw - 16 * s, ust - 16 * s, 16 * s); ctx.fill();
       ctx.fillStyle = ['#00F134', '#D8B67A', '#7FB2FF', '#FF9DD2'][i]; ctx.fillRect(x + 8 * s, A.y, cw - 16 * s, 5 * s);
-      let f = 40 * s; do { ctx.font = `700 ${Math.round(f)}px "Space Grotesk", Inter, sans-serif`; f -= 2 * s; } while (ctx.measureText(v.ad).width > cw - 48 * s && f > 18 * s);
+      let f = 40 * s; do { ctx.font = `600 ${Math.round(f)}px Inter, sans-serif`; f -= 2 * s; } while (ctx.measureText(v.ad).width > cw - 48 * s && f > 18 * s);
       ctx.fillStyle = '#EEF2F6'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(v.ad, x + cw / 2, A.y + (ust - 16 * s) / 2 + 2 * s);
     });
     sat.forEach((r, j) => {
@@ -79,7 +79,7 @@
         const sira = +x, cx = x0 + k * r * 2.3;
         ctx.beginPath(); ctx.arc(cx, fy, r, 0, Math.PI * 2);
         ctx.fillStyle = sira === 1 ? '#00F134' : sira <= 3 && sira ? '#D8B67A' : sira <= 5 && sira ? 'rgba(238,242,246,.25)' : 'rgba(238,242,246,.08)'; ctx.fill();
-        ctx.fillStyle = sira && sira <= 3 ? '#070E1D' : '#EEF2F6'; ctx.textAlign = 'center'; ctx.font = `700 ${Math.round(r * 1.05)}px "Space Grotesk", Inter, sans-serif`; ctx.fillText(x, cx, fy + 1);
+        ctx.fillStyle = sira && sira <= 3 ? '#070E1D' : '#EEF2F6'; ctx.textAlign = 'center'; ctx.font = `600 ${Math.round(r * 1.05)}px Inter, sans-serif`; ctx.fillText(x, cx, fy + 1);
       });
     });
     ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';

@@ -4,7 +4,6 @@
   const RENK = {bg: '#070E1D', panel: '#0C1628', fg: '#EEF2F6', mut: '#8A97AD', line: '#1B2A44', yesil: '#00F134', kum: '#D8B67A', kirmizi: '#FF7A66'};
   const BOYUT = {yayin: [1920, 1080, 'Yayın · 1920×1080'], dikey: [1080, 1350, 'Instagram · 1080×1350'], kare: [1080, 1080, 'Kare · 1080×1080']};
   const e = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
-  const logo = new Image(); logo.src = 'logo.png';
 
   // "1.089" -> 1089, "%22,2" -> 22.2, "246,7 mn ₺" -> 246.7, "1.25.51" (derece) -> 85.51 sn
   function sayi(t) {
@@ -61,10 +60,10 @@
     const P = Math.round(W * 0.05), s = W / 1920 * (W < H ? 1.5 : 1);
     const lg = Math.round(84 * s);
     ctx.fillStyle = RENK.yesil; yuvarlak(ctx, P, P + 6 * s, 8 * s, lg - 12 * s, 4 * s); ctx.fill();
-    ctx.fillStyle = RENK.fg; ctx.font = `700 ${Math.round(60 * s)}px "Space Grotesk", Inter, sans-serif`; ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = RENK.fg; ctx.font = `600 ${Math.round(60 * s)}px Inter, sans-serif`; ctx.textBaseline = 'alphabetic';
     const tx = P + 30 * s;
     ctx.fillText(kirp(ctx, baslik, W - tx - P), tx, P + lg * 0.55);
-    ctx.fillStyle = RENK.mut; ctx.font = `500 ${Math.round(28 * s)}px Inter, sans-serif`;
+    ctx.fillStyle = RENK.mut; ctx.font = `600 ${Math.round(28 * s)}px Inter, sans-serif`;
     ctx.fillText(kirp(ctx, alt, W - tx - P), tx, P + lg * 0.55 + 44 * s);
     // pist rayı ve dipnot
     const ry = H - P - 40 * s;
@@ -122,8 +121,8 @@
       }
       ctx.textAlign = 'center';
       if (n <= 24 || i % adim === 0) {
-        ctx.fillStyle = RENK.fg; ctx.font = `700 ${fs}px Inter, sans-serif`; ctx.fillText(d.metin, x + bw / 2, y - 16 * s);
-        ctx.fillStyle = RENK.mut; ctx.font = `500 ${fs}px Inter, sans-serif`; ctx.fillText(kirp(ctx, d.k, bw - 6 * s), x + bw / 2, A.y + ust + H + 38 * s);
+        ctx.fillStyle = RENK.fg; ctx.font = `600 ${fs}px Inter, sans-serif`; ctx.fillText(d.metin, x + bw / 2, y - 16 * s);
+        ctx.fillStyle = RENK.mut; ctx.font = `600 ${fs}px Inter, sans-serif`; ctx.fillText(kirp(ctx, d.k, bw - 6 * s), x + bw / 2, A.y + ust + H + 38 * s);
       }
     });
     ctx.textAlign = 'left';
@@ -164,18 +163,18 @@
       ctx.fillStyle = sira === 1 ? 'rgba(0,241,52,.07)' : 'rgba(238,242,246,.04)'; yuvarlak(ctx, x, y, w, h, 22 * s); ctx.fill();
       ctx.strokeStyle = sira === 1 ? 'rgba(0,241,52,.6)' : RENK.line; ctx.lineWidth = 2 * s; ctx.stroke();
       const p = (buyuk ? 40 : 28) * s;
-      if (buyuk) { ctx.save(); yuvarlak(ctx, x, y, w, h, 22 * s); ctx.clip(); ctx.fillStyle = 'rgba(0,241,52,.07)'; ctx.font = `700 ${Math.round(h * 1.05)}px "Space Grotesk", Inter, sans-serif`; ctx.textAlign = 'right'; ctx.textBaseline = 'alphabetic'; ctx.fillText('1', x + w + h * 0.08, y + h * 0.95); ctx.restore(); ctx.textAlign = 'left'; }
+      if (buyuk) { ctx.save(); yuvarlak(ctx, x, y, w, h, 22 * s); ctx.clip(); ctx.fillStyle = 'rgba(0,241,52,.07)'; ctx.font = `600 ${Math.round(h * 1.05)}px Inter, sans-serif`; ctx.textAlign = 'right'; ctx.textBaseline = 'alphabetic'; ctx.fillText('1', x + w + h * 0.08, y + h * 0.95); ctx.restore(); ctx.textAlign = 'left'; }
       ctx.textBaseline = 'top'; ctx.fillStyle = sira === 1 ? RENK.yesil : sira <= 3 ? RENK.kum : RENK.mut;
-      ctx.font = `700 ${Math.round((buyuk ? 34 : 26) * s)}px "Space Grotesk", Inter, sans-serif`;
+      ctx.font = `600 ${Math.round((buyuk ? 34 : 26) * s)}px Inter, sans-serif`;
       ctx.fillText(sira + '.', x + p, y + p);
       let fs = (buyuk ? 60 : 38) * s; ctx.fillStyle = RENK.fg;
-      do { ctx.font = `700 ${Math.round(fs)}px "Space Grotesk", Inter, sans-serif`; fs -= 2 * s; } while (ctx.measureText(d.k).width > w - 2 * p && fs > 18 * s);
+      do { ctx.font = `600 ${Math.round(fs)}px Inter, sans-serif`; fs -= 2 * s; } while (ctx.measureText(d.k).width > w - 2 * p && fs > 18 * s);
       ctx.fillText(d.k, x + p, y + p + (buyuk ? 52 : 38) * s);
       ctx.textBaseline = 'alphabetic';
       let vs = Math.min((buyuk ? 170 : 92) * s, h * (buyuk ? 0.42 : 0.4));
-      do { ctx.font = `700 ${Math.round(vs)}px "Space Grotesk", Inter, sans-serif`; vs -= 3 * s; } while (ctx.measureText(d.metin).width > w - 2 * p && vs > 24 * s);
+      do { ctx.font = `600 ${Math.round(vs)}px Inter, sans-serif`; vs -= 3 * s; } while (ctx.measureText(d.metin).width > w - 2 * p && vs > 24 * s);
       ctx.fillStyle = sira === 1 ? RENK.yesil : RENK.fg; ctx.fillText(d.metin, x + p, y + h - p - (birim ? 34 * s : 0));
-      if (birim) { ctx.fillStyle = RENK.mut; ctx.font = `500 ${Math.round(24 * s)}px Inter, sans-serif`; ctx.fillText(birim, x + p, y + h - p); }
+      if (birim) { ctx.fillStyle = RENK.mut; ctx.font = `600 ${Math.round(24 * s)}px Inter, sans-serif`; ctx.fillText(birim, x + p, y + h - p); }
     };
     const liste = (x, y, w, h, kalan, bas) => {
       if (!kalan.length) return;
@@ -183,9 +182,9 @@
       kalan.forEach((d, i) => {
         const yy = y + i * sh + sh / 2; ctx.textBaseline = 'middle';
         if (i) { ctx.fillStyle = RENK.line; ctx.fillRect(x, y + i * sh, w, 2 * s); }
-        ctx.fillStyle = RENK.mut; ctx.font = `700 ${fs}px "Space Grotesk", Inter, sans-serif`; ctx.textAlign = 'left'; ctx.fillText((bas + i) + '.', x, yy);
+        ctx.fillStyle = RENK.mut; ctx.font = `600 ${fs}px Inter, sans-serif`; ctx.textAlign = 'left'; ctx.fillText((bas + i) + '.', x, yy);
         ctx.fillStyle = 'rgba(238,242,246,.9)'; ctx.font = `600 ${fs}px Inter, sans-serif`; ctx.fillText(kirp(ctx, d.k, w * 0.62), x + 62 * s, yy);
-        ctx.textAlign = 'right'; ctx.fillStyle = RENK.fg; ctx.font = `700 ${fs}px "Space Grotesk", Inter, sans-serif`; ctx.fillText(d.metin, x + w, yy);
+        ctx.textAlign = 'right'; ctx.fillStyle = RENK.fg; ctx.font = `600 ${fs}px Inter, sans-serif`; ctx.fillText(d.metin, x + w, yy);
         ctx.textAlign = 'left';
       });
       ctx.textBaseline = 'alphabetic';
@@ -212,7 +211,7 @@
     ctx.strokeStyle = 'rgba(238,242,246,.08)'; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
     ctx.strokeStyle = renk; ctx.beginPath(); ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.max(0.005, Math.min(1, yuzde / 100))); ctx.stroke();
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = RENK.fg;
-    ctx.font = `700 ${Math.round(r * 0.46)}px "Space Grotesk", Inter, sans-serif`;
+    ctx.font = `600 ${Math.round(r * 0.46)}px Inter, sans-serif`;
     ctx.fillText('%' + new Intl.NumberFormat('tr-TR', {maximumFractionDigits: 1}).format(yuzde), cx, cy - r * 0.04);
     ctx.fillStyle = RENK.mut; ctx.font = `600 ${Math.round(Math.max(20 * s, r * 0.15))}px Inter, sans-serif`;
     ctx.fillText(etiket, cx, cy + r * 0.36);
@@ -221,13 +220,13 @@
   function istatKutular(ctx, x, y, w, h, liste, sut, s) {
     const bos = 20 * s, sat = Math.ceil(liste.length / sut), kw = (w - bos * (sut - 1)) / sut, kh = (h - bos * (sat - 1)) / sat;
     let fs = Math.min(kh * 0.42, 110 * s);
-    const sig = () => { ctx.font = `700 ${Math.round(fs)}px "Space Grotesk", Inter, sans-serif`; return liste.every((d) => ctx.measureText(d.metin).width < kw - 56 * s); };
+    const sig = () => { ctx.font = `600 ${Math.round(fs)}px Inter, sans-serif`; return liste.every((d) => ctx.measureText(d.metin).width < kw - 56 * s); };
     while (!sig() && fs > 26 * s) fs -= 3 * s;
     liste.forEach((d, i) => {
       const kx = x + (i % sut) * (kw + bos), ky = y + Math.floor(i / sut) * (kh + bos), p = 28 * s;
       ctx.fillStyle = 'rgba(238,242,246,.04)'; yuvarlak(ctx, kx, ky, kw, kh, 20 * s); ctx.fill(); ctx.strokeStyle = RENK.line; ctx.lineWidth = 2 * s; ctx.stroke();
       ctx.fillStyle = RENK.mut; ctx.font = `600 ${Math.round(26 * s)}px Inter, sans-serif`; ctx.textBaseline = 'top'; ctx.fillText(kirp(ctx, d.k, kw - 2 * p), kx + p, ky + p);
-      ctx.textBaseline = 'alphabetic'; ctx.font = `700 ${Math.round(fs)}px "Space Grotesk", Inter, sans-serif`; ctx.fillStyle = d.vurgu ? RENK.yesil : RENK.fg;
+      ctx.textBaseline = 'alphabetic'; ctx.font = `600 ${Math.round(fs)}px Inter, sans-serif`; ctx.fillStyle = d.vurgu ? RENK.yesil : RENK.fg;
       ctx.fillText(d.metin, kx + p, ky + kh - p);
     });
   }
@@ -239,8 +238,8 @@
       const bh = Math.max(3 * s, H * d.v / max), bx = x + i * bw + bw * 0.18, by = ust + H - bh;
       ctx.fillStyle = i === enb ? RENK.yesil : 'rgba(238,242,246,.55)'; yuvarlak(ctx, bx, by, bw * 0.64, bh, Math.min(8 * s, bw * 0.2)); ctx.fill();
       ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
-      if (d.v) { ctx.fillStyle = i === enb ? RENK.yesil : RENK.fg; ctx.font = `700 ${Math.round(Math.min(24 * s, bw * 0.4))}px Inter, sans-serif`; ctx.fillText(String(d.v), bx + bw * 0.32, by - 8 * s); }
-      ctx.fillStyle = RENK.mut; ctx.font = `500 ${Math.round(Math.min(20 * s, bw * 0.36))}px Inter, sans-serif`; ctx.fillText(d.k, bx + bw * 0.32, ust + H + 26 * s);
+      if (d.v) { ctx.fillStyle = i === enb ? RENK.yesil : RENK.fg; ctx.font = `600 ${Math.round(Math.min(24 * s, bw * 0.4))}px Inter, sans-serif`; ctx.fillText(String(d.v), bx + bw * 0.32, by - 8 * s); }
+      ctx.fillStyle = RENK.mut; ctx.font = `600 ${Math.round(Math.min(20 * s, bw * 0.36))}px Inter, sans-serif`; ctx.fillText(d.k, bx + bw * 0.32, ust + H + 26 * s);
       ctx.textAlign = 'left';
     });
   }
@@ -253,26 +252,26 @@
       ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
       ctx.fillStyle = sira === 1 ? RENK.yesil : sira <= 3 ? RENK.kum : sira <= 5 ? 'rgba(238,242,246,.22)' : 'rgba(238,242,246,.07)'; ctx.fill();
       ctx.fillStyle = sira <= 3 ? RENK.bg : RENK.fg; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.font = `700 ${Math.round(r * 0.9)}px "Space Grotesk", Inter, sans-serif`; ctx.fillText(f.s, cx, cy + 1);
-      ctx.fillStyle = RENK.mut; ctx.font = `500 ${Math.round(Math.min(18 * s, adim * 0.2))}px Inter, sans-serif`; ctx.fillText(f.t, cx, cy + r + 22 * s);
+      ctx.font = `600 ${Math.round(r * 0.9)}px Inter, sans-serif`; ctx.fillText(f.s, cx, cy + 1);
+      ctx.fillStyle = RENK.mut; ctx.font = `600 ${Math.round(Math.min(18 * s, adim * 0.2))}px Inter, sans-serif`; ctx.fillText(f.t, cx, cy + r + 22 * s);
     });
     ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
   }
   function notCiz(ctx, x, y, w, notlar, s) {
     notlar.forEach(([k, v], i) => {
       const yy = y + i * 54 * s; ctx.textBaseline = 'top';
-      ctx.fillStyle = RENK.mut; ctx.font = `500 ${Math.round(24 * s)}px Inter, sans-serif`; ctx.fillText(k, x, yy);
+      ctx.fillStyle = RENK.mut; ctx.font = `600 ${Math.round(24 * s)}px Inter, sans-serif`; ctx.fillText(k, x, yy);
       const kw = ctx.measureText(k + '  ').width;
-      ctx.fillStyle = RENK.fg; ctx.font = `700 ${Math.round(26 * s)}px Inter, sans-serif`; ctx.fillText(kirp(ctx, v, w - kw), x + kw, yy - 1 * s);
+      ctx.fillStyle = RENK.fg; ctx.font = `600 ${Math.round(26 * s)}px Inter, sans-serif`; ctx.fillText(kirp(ctx, v, w - kw), x + kw, yy - 1 * s);
     });
     ctx.textBaseline = 'alphabetic';
   }
   async function profilCiz(canvas, P, boyut) {
     const [W, H] = BOYUT[boyut]; canvas.width = W; canvas.height = H;
-    try { await Promise.all([document.fonts.load('700 60px "Space Grotesk"'), document.fonts.load('600 30px Inter'), logo.decode?.()]); } catch (err) {}
+    try { await Promise.all([document.fonts.load('600 60px Inter')]); } catch (err) {}
     const ctx = canvas.getContext('2d'), A = zemin(ctx, W, H, P.ad, P.rol), s = A.s;
     const genis = A.w > A.h * 1.4, bos = 28 * s;
-    if (P.dipnot) { ctx.fillStyle = RENK.mut; ctx.font = `500 ${Math.round(22 * s)}px Inter, sans-serif`; ctx.textAlign = 'center'; ctx.fillText(P.dipnot, W / 2, H - Math.round(W * 0.05) - 40 * s + 38 * s); ctx.textAlign = 'left'; }
+    if (P.dipnot) { ctx.fillStyle = RENK.mut; ctx.font = `600 ${Math.round(22 * s)}px Inter, sans-serif`; ctx.textAlign = 'center'; ctx.fillText(P.dipnot, W / 2, H - Math.round(W * 0.05) - 40 * s + 38 * s); ctx.textAlign = 'left'; }
     const alt = P.form ? (cx, cy, cw, ch) => formCiz(ctx, cx, cy, cw, ch, 'Son koşuları (soldan sağa eskiden yeniye)', P.form, s)
       : (cx, cy, cw, ch) => aylikCiz(ctx, cx, cy, cw, ch, P.seri.baslik, P.seri.veri, s);
     if (genis) {
@@ -322,10 +321,10 @@
   }
   function tekCiz(ctx, A, d) {
     const s = A.s, x = A.x, y = A.y + A.h * 0.5;
-    ctx.fillStyle = RENK.yesil; ctx.font = `700 ${Math.round(Math.min(260 * s, A.w / Math.max(3, d.metin.length) * 1.7))}px "Space Grotesk", Inter, sans-serif`;
+    ctx.fillStyle = RENK.yesil; ctx.font = `600 ${Math.round(Math.min(260 * s, A.w / Math.max(3, d.metin.length) * 1.7))}px Inter, sans-serif`;
     ctx.textBaseline = 'alphabetic'; ctx.fillText(d.metin, x, y + 40 * s);
     ctx.fillStyle = RENK.fg; ctx.font = `600 ${Math.round(48 * s)}px Inter, sans-serif`; ctx.fillText(kirp(ctx, d.k, A.w), x, y + 120 * s);
-    if (d.alt) { ctx.fillStyle = RENK.mut; ctx.font = `500 ${Math.round(32 * s)}px Inter, sans-serif`; ctx.fillText(kirp(ctx, d.alt, A.w), x, y + 172 * s); }
+    if (d.alt) { ctx.fillStyle = RENK.mut; ctx.font = `600 ${Math.round(32 * s)}px Inter, sans-serif`; ctx.fillText(kirp(ctx, d.alt, A.w), x, y + 172 * s); }
   }
   function kartCiz(ctx, A, veri) {
     const s = A.s, n = Math.min(veri.length, 6), dikeyEkran = A.w < A.h * 1.3;
@@ -335,7 +334,7 @@
     const p = 36 * s, altVar = veri.slice(0, n).some((d) => d.alt);
     // bütün kartlarda aynı rakam boyutu: en uzun rakam kutuya sığacak kadar
     let fs = Math.min(h * (altVar ? 0.34 : 0.42), 150 * s);
-    const sigdir = () => { ctx.font = `700 ${Math.round(fs)}px "Space Grotesk", Inter, sans-serif`; return veri.slice(0, n).every((d) => ctx.measureText(d.metin).width <= w - 2 * p); };
+    const sigdir = () => { ctx.font = `600 ${Math.round(fs)}px Inter, sans-serif`; return veri.slice(0, n).every((d) => ctx.measureText(d.metin).width <= w - 2 * p); };
     while (!sigdir() && fs > 30 * s) fs -= 4 * s;
     veri.slice(0, n).forEach((d, i) => {
       const x = A.x + (i % sut) * (w + bosluk), y = y0 + Math.floor(i / sut) * (h + bosluk);
@@ -345,9 +344,9 @@
       ctx.fillText(kirp(ctx, d.k, w - 2 * p), x + p, y + p);
       ctx.textBaseline = 'alphabetic';
       const altY = y + h - p, sayiY = altVar ? altY - 26 * s - 28 * s : altY;
-      ctx.font = `700 ${Math.round(fs)}px "Space Grotesk", Inter, sans-serif`; ctx.fillStyle = i === 0 ? RENK.yesil : RENK.fg;
+      ctx.font = `600 ${Math.round(fs)}px Inter, sans-serif`; ctx.fillStyle = i === 0 ? RENK.yesil : RENK.fg;
       ctx.fillText(d.metin, x + p, sayiY);
-      if (d.alt) { ctx.fillStyle = RENK.mut; ctx.font = `500 ${Math.round(26 * s)}px Inter, sans-serif`; ctx.fillText(kirp(ctx, d.alt, w - 2 * p), x + p, altY); }
+      if (d.alt) { ctx.fillStyle = RENK.mut; ctx.font = `600 ${Math.round(26 * s)}px Inter, sans-serif`; ctx.fillText(kirp(ctx, d.alt, w - 2 * p), x + p, altY); }
     });
     ctx.textBaseline = 'alphabetic';
   }
@@ -358,11 +357,11 @@
       const y = y0 + i * satirH, orta = y + satirH / 2;
       if (i) { ctx.fillStyle = RENK.line; ctx.fillRect(A.x, y, A.w, 2 * s); }
       ctx.textBaseline = 'middle';
-      ctx.font = `700 ${fs}px "Space Grotesk", Inter, sans-serif`; ctx.fillStyle = i === 0 ? RENK.yesil : RENK.mut; ctx.textAlign = 'left';
+      ctx.font = `600 ${fs}px Inter, sans-serif`; ctx.fillStyle = i === 0 ? RENK.yesil : RENK.mut; ctx.textAlign = 'left';
       ctx.fillText(String(i + 1), A.x, orta);
       ctx.fillStyle = i === 0 ? RENK.fg : 'rgba(238,242,246,.88)'; ctx.font = `600 ${fs}px Inter, sans-serif`;
       ctx.fillText(kirp(ctx, d.k, A.w * 0.62), A.x + 80 * s, orta);
-      ctx.textAlign = 'right'; ctx.fillStyle = i === 0 ? RENK.yesil : RENK.fg; ctx.font = `700 ${Math.round(fs * 1.12)}px "Space Grotesk", Inter, sans-serif`;
+      ctx.textAlign = 'right'; ctx.fillStyle = i === 0 ? RENK.yesil : RENK.fg; ctx.font = `600 ${Math.round(fs * 1.12)}px Inter, sans-serif`;
       ctx.fillText(d.metin, A.x + A.w, orta);
     });
     ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
@@ -393,10 +392,10 @@
   async function ciz(canvas, ayar) {
     const [W, H] = BOYUT[ayar.boyut];
     canvas.width = W; canvas.height = H;
-    try { await Promise.all([document.fonts.load('700 60px "Space Grotesk"'), document.fonts.load('600 30px Inter'), logo.decode?.()]); } catch (err) {}
+    try { await Promise.all([document.fonts.load('600 60px Inter')]); } catch (err) {}
     const ctx = canvas.getContext('2d');
     const A = zemin(ctx, W, H, ayar.baslik, ayar.alt);
-    if (!ayar.veri.length && !(ayar.gorunum === 'tablo' && ayar.T)) { ctx.fillStyle = RENK.mut; ctx.font = `500 ${32 * A.s}px Inter`; ctx.fillText('Bu seçimle çizilecek veri yok.', A.x, A.y + 60 * A.s); return; }
+    if (!ayar.veri.length && !(ayar.gorunum === 'tablo' && ayar.T)) { ctx.fillStyle = RENK.mut; ctx.font = `600 ${32 * A.s}px Inter, sans-serif`; ctx.fillText('Bu seçimle çizilecek veri yok.', A.x, A.y + 60 * A.s); return; }
     const g = ayar.gorunum, yz = yorum(ayar, g);
     if (yz) { A.h -= 64 * A.s; ctx.fillStyle = RENK.fg; ctx.font = `600 ${Math.round(28 * A.s)}px Inter, sans-serif`; ctx.fillText(kirp(ctx, yz, A.w), A.x, A.y + A.h + 52 * A.s); }
     if (g === 'podyum') podyumCiz(ctx, A, ayar.veri, ayar.birim);
@@ -501,5 +500,5 @@
   dugmeEkle();
   // grafiğe çevrilebilecek bir tablo/grafik var mı? (sohbet asistanı kullanır)
   const uygun = (el) => kaynaklar(el).some((k) => k.el.tagName !== 'TABLE' || tabloOku(k.el).sayisal.some(Boolean));
-  window.tjkGrafik = {ac, sayi, uygun, profil: profilAc, _: {RENK, BOYUT, zemin, yuvarlak, kirp, indir, logo}};
+  window.tjkGrafik = {ac, sayi, uygun, profil: profilAc, _: {RENK, BOYUT, zemin, yuvarlak, kirp, indir}};
 })();
