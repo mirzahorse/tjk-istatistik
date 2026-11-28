@@ -9,6 +9,10 @@ on:
         description: "Yıl aralığı (ör. 2000-2025)"
         default: "2021-2025"
         required: false
+      yeniden:
+        description: "Var olan özetleri de yeniden hesapla (ör. yeni alan eklendiğinde)"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -33,7 +37,7 @@ jobs:
           BAS=${{ inputs.yillar }}; BAS=${BAS:-2021-2025}; A=${BAS%-*}; B=${BAS#*-}
           LISTE=""
           for Y in $(seq $A $B); do
-            if [ -f ozet/$Y.json ]; then echo "$Y: özet zaten var"; continue; fi
+            if [ -f ozet/$Y.json ] && [ "${{ inputs.yeniden }}" != "true" ]; then echo "$Y: özet zaten var"; continue; fi
             if python3 tjk_indir.py --yil $Y --ornek --klasor /tmp/kesif > /tmp/k.log 2>&1; then
               echo "$Y: VAR"; LISTE="$LISTE,$Y"
             else

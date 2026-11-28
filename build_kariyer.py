@@ -73,7 +73,7 @@ def main():
             birlestir(kayit)
         liste = []
         for ad, yl in kayit.items():
-            top = [sum(x[i] for x in yl) for i in range(1, 7)]
+            top = [sum(x[i] if len(x) > i else 0 for x in yl) for i in range(1, 8)]
             liste.append([ad, top, yl])
         liste.sort(key=lambda x: (-x[1][1], -x[1][0]))
         with open(os.path.join(cikti, f"{k}.json"), "w", encoding="utf-8") as f:

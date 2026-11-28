@@ -5,7 +5,7 @@ Bir yılın TJK sonuç CSV'lerinden kariyer özeti çıkarır: ozet/YYYY.json
 Kullanım:
     python3 ozet_yil.py <csv_klasoru> <yil> [--cikti ozet]
 
-Her kişi/at için [koşu, 1., 2., 3., 4., 5.] sayıları tutulur.
+Her kişi/at için [koşu, 1., 2., 3., 4., 5., kazanç TL] tutulur (kazanç: ilk beşe giren atların ikramiyesi).
 Ham CSV'ler depoda saklanmaz (her yıl ~13 MB); geçmiş yıllar için sadece bu özet saklanır.
 """
 import argparse
@@ -38,10 +38,11 @@ def ozetle(klasor, yil):
             for k, ad in anahtarlar.items():
                 if not ad or ad.startswith("|"):
                     continue
-                v = oz[k].setdefault(ad, [0, 0, 0, 0, 0, 0])
+                v = oz[k].setdefault(ad, [0, 0, 0, 0, 0, 0, 0])
                 v[0] += 1
                 if 1 <= sira <= 5:
                     v[sira] += 1
+                v[6] += round(r.get("kazanc") or 0)
     return {"yil": yil, "dosya": dosya, "kosu": len(kosular), "start": start, "hatali": hatali[:20], **oz}
 
 
