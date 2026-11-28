@@ -25,30 +25,32 @@
     let L = [];
     for (const [ad, , yl] of D.k) {
       if (q && !fold(ad.split('|')[0]).includes(q) && !(window.adEslesir && window.adEslesir(ad.split('|')[0], q))) continue;
-      const t = [0, 0, 0, 0, 0, 0]; let ilk = 0, son = 0;
+      const t = [0, 0, 0, 0, 0, 0, 0]; let ilk = 0, son = 0;
       for (const x of yl) {
         if (x[0] < bas || x[0] > bit) continue;
-        for (let i = 0; i < 6; i++) t[i] += x[i + 1];
+        for (let i = 0; i < 7; i++) t[i] += x[i + 1] || 0;
         if (!ilk) ilk = x[0]; son = x[0];
       }
       if (!t[0]) continue;
       L.push({ad, t, ilk, son, yuzde: 100 * t[1] / t[0], tabela: 100 * (t[1] + t[2] + t[3]) / t[0]});
     }
     if (S.sira === 'yuzde' || S.sira === 'tabela') L = L.filter((o) => o.t[0] >= min);
-    const f = {bir: (o) => o.t[1], kosu: (o) => o.t[0], yuzde: (o) => o.yuzde, tabela: (o) => o.tabela, iki: (o) => o.t[2]}[S.sira];
+    const f = {bir: (o) => o.t[1], kosu: (o) => o.t[0], yuzde: (o) => o.yuzde, tabela: (o) => o.tabela, iki: (o) => o.t[2], kz: (o) => o.t[6]}[S.sira];
     L.sort((a, b) => f(b) - f(a) || b.t[1] - a.t[1]);
     return L;
   }
 
+  const para = (v) => nf1.format(v / 1e6) + ' mn ₺';
+  const kzAd = () => (S.kat === 'at' || S.kat === 'sh' ? 'Kazanç' : 'Kazandırdığı ikramiye');
   function detay(D, o) {
     const [, , yl] = D.k.find((x) => x[0] === o.ad);
     const satir = yl.filter((x) => x[0] >= S.bas && x[0] <= S.bit);
     const grafik = typeof cizgi === 'function' && satir.length > 1 ? cizgi(satir.map((x) => ({x: String(x[0]), y: x[2]})), {aria: 'Yıllara göre birincilik'}) : '';
     return `<section class="card" id="tumDetay"><h2>${e(adGoster(S.kat, o.ad))}</h2>
-      <p class="d">${o.ilk === o.son ? o.ilk : o.ilk + '–' + o.son} · ${nf.format(o.t[0])} koşu · ${nf.format(o.t[1])} birincilik (%${nf1.format(o.yuzde)}) · ilk üç %${nf1.format(o.tabela)}</p>
+      <p class="d">${o.ilk === o.son ? o.ilk : o.ilk + '–' + o.son} · ${nf.format(o.t[0])} koşu · ${nf.format(o.t[1])} birincilik (%${nf1.format(o.yuzde)}) · ilk üç %${nf1.format(o.tabela)}${o.t[6] ? ' · ' + kzAd().toLocaleLowerCase('tr') + ' ' + para(o.t[6]) : ''}</p>
       ${grafik ? '<p class="d">Yıllara göre birincilik sayısı</p>' + grafik : ''}
-      <div class="tw"><table><thead><tr><th>Yıl</th><th class="r">Koşu</th><th class="r">1.</th><th class="r">2.</th><th class="r">3.</th><th class="r">4.</th><th class="r">5.</th><th class="r">Kazanma %</th></tr></thead><tbody>
-      ${satir.slice().reverse().map((x) => `<tr><td>${x[0]}</td>${x.slice(1).map((v) => `<td class="r">${nf.format(v)}</td>`).join('')}<td class="r">%${nf1.format(x[1] ? 100 * x[2] / x[1] : 0)}</td></tr>`).join('')}
+      <div class="tw"><table><thead><tr><th>Yıl</th><th class="r">Koşu</th><th class="r">1.</th><th class="r">2.</th><th class="r">3.</th><th class="r">4.</th><th class="r">5.</th><th class="r">Kazanma %</th><th class="r">${kzAd()}</th></tr></thead><tbody>
+      ${satir.slice().reverse().map((x) => `<tr><td>${x[0]}</td>${x.slice(1, 7).map((v) => `<td class="r">${nf.format(v)}</td>`).join('')}<td class="r">%${nf1.format(x[1] ? 100 * x[2] / x[1] : 0)}</td><td class="r">${x.length > 7 ? para(x[7]) : '—'}</td></tr>`).join('')}
       </tbody></table></div></section>`;
   }
 
@@ -75,16 +77,16 @@
           <label>Ara<input id="tumAra" type="search" placeholder="İsim yazın" value="${e(S.ara)}"></label>
           <label>İlk yıl${ySec('tumBas', S.bas)}</label>
           <label>Son yıl${ySec('tumBit', S.bit)}</label>
-          <label>Sırala<select id="tumSira">${[['bir', 'Birincilik'], ['iki', 'İkincilik'], ['kosu', 'Koşu sayısı'], ['yuzde', 'Kazanma %'], ['tabela', 'İlk üç %']].map(([v, t]) => `<option value="${v}"${v === S.sira ? ' selected' : ''}>${t}</option>`).join('')}</select></label>
+          <label>Sırala<select id="tumSira">${[['bir', 'Birincilik'], ['iki', 'İkincilik'], ['kosu', 'Koşu sayısı'], ['kz', 'Kazanç'], ['yuzde', 'Kazanma %'], ['tabela', 'İlk üç %']].map(([v, t]) => `<option value="${v}"${v === S.sira ? ' selected' : ''}>${t}</option>`).join('')}</select></label>
           ${S.sira === 'yuzde' || S.sira === 'tabela' ? `<label>En az koşu<input id="tumMin" type="number" min="1" value="${S.min ?? MIN_VARS[S.kat]}" style="width:6em"></label>` : ''}
         </div>
         ${enIyi && !S.ara ? `<div class="tiles">${[
           ['Zirvede', adGoster(S.kat, enIyi.ad).replace(/ \(.*/, '')],
-          [S.sira === 'kosu' ? 'Koşu' : S.sira === 'yuzde' ? 'Kazanma %' : S.sira === 'tabela' ? 'İlk üç %' : S.sira === 'iki' ? 'İkincilik' : 'Birincilik',
-            S.sira === 'yuzde' ? '%' + nf1.format(enIyi.yuzde) : S.sira === 'tabela' ? '%' + nf1.format(enIyi.tabela) : nf.format(S.sira === 'kosu' ? enIyi.t[0] : S.sira === 'iki' ? enIyi.t[2] : enIyi.t[1])]
+          [S.sira === 'kz' ? kzAd() : S.sira === 'kosu' ? 'Koşu' : S.sira === 'yuzde' ? 'Kazanma %' : S.sira === 'tabela' ? 'İlk üç %' : S.sira === 'iki' ? 'İkincilik' : 'Birincilik',
+            S.sira === 'kz' ? para(enIyi.t[6]) : S.sira === 'yuzde' ? '%' + nf1.format(enIyi.yuzde) : S.sira === 'tabela' ? '%' + nf1.format(enIyi.tabela) : nf.format(S.sira === 'kosu' ? enIyi.t[0] : S.sira === 'iki' ? enIyi.t[2] : enIyi.t[1])]
         ].map(([k, v]) => `<div class="tile"><div class="k">${e(k)}</div><div class="v">${e(v)}</div></div>`).join('')}</div>` : ''}
-        ${L.length ? `<div class="tw tall"><table class="tik"><thead><tr><th class="r">#</th><th>${e(KAT.find((x) => x[0] === S.kat)[1])}</th><th>Yıllar</th><th class="r">Koşu</th><th class="r">1.</th><th class="r">2.</th><th class="r">3.</th><th class="r">Kazanma %</th><th class="r">İlk üç %</th></tr></thead><tbody>
-          ${L.slice(0, 200).map((o, i) => `<tr data-ad="${e(o.ad)}"${o.ad === S.sec ? ' class="sec"' : ''}><td class="r">${i + 1}</td><td><a href="#" data-ad="${e(o.ad)}">${e(adGoster(S.kat, o.ad))}</a></td><td>${o.ilk === o.son ? o.ilk : o.ilk + '–' + o.son}</td><td class="r">${nf.format(o.t[0])}</td><td class="r">${nf.format(o.t[1])}</td><td class="r">${nf.format(o.t[2])}</td><td class="r">${nf.format(o.t[3])}</td><td class="r">%${nf1.format(o.yuzde)}</td><td class="r">%${nf1.format(o.tabela)}</td></tr>`).join('')}
+        ${L.length ? `<div class="tw tall"><table class="tik"><thead><tr><th class="r">#</th><th>${e(KAT.find((x) => x[0] === S.kat)[1])}</th><th>Yıllar</th><th class="r">Koşu</th><th class="r">1.</th><th class="r">2.</th><th class="r">3.</th><th class="r">Kazanma %</th><th class="r">İlk üç %</th><th class="r">${kzAd()}</th></tr></thead><tbody>
+          ${L.slice(0, 200).map((o, i) => `<tr data-ad="${e(o.ad)}"${o.ad === S.sec ? ' class="sec"' : ''}><td class="r">${i + 1}</td><td><a href="#" data-ad="${e(o.ad)}">${e(adGoster(S.kat, o.ad))}</a></td><td>${o.ilk === o.son ? o.ilk : o.ilk + '–' + o.son}</td><td class="r">${nf.format(o.t[0])}</td><td class="r">${nf.format(o.t[1])}</td><td class="r">${nf.format(o.t[2])}</td><td class="r">${nf.format(o.t[3])}</td><td class="r">%${nf1.format(o.yuzde)}</td><td class="r">%${nf1.format(o.tabela)}</td><td class="r">${o.t[6] ? para(o.t[6]) : '—'}</td></tr>`).join('')}
           </tbody></table></div>${L.length > 200 ? `<p class="d">İlk 200 gösteriliyor (toplam ${nf.format(L.length)}). Aramayla daraltabilirsiniz.</p>` : ''}` : '<div class="empty">Sonuç yok.</div>'}
         <p class="d">Not: Jokey, antrenör ve sahip adları TJK dosyalarındaki kısaltmalarla tutulur; uzun yıllarda aynı kısaltmayı kullanan farklı kişiler birleşmiş görünebilir. Atlar ad + doğum yılı + ırk ile ayırt edilir.</p>
       </section>

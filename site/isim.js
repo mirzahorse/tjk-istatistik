@@ -9,6 +9,30 @@
     anne: {ad: 'Kısrak', f: (r) => r.anne},
     sahip: {ad: 'Sahip', f: (r) => r.sahip}
   };
+  // yıllara göre kariyer (kariyer/*.enc: [ad, toplam, [[yıl, koşu, 1., 2., 3., 4., 5., kazanç], ...]])
+  const kariyerVeri = {};
+  async function kariyerCiz(panel, k, ad, tur, L) {
+    const yer = panel.querySelector('.karne-kariyer'); if (!yer || !window.tjkCoz) return;
+    try {
+      kariyerVeri[k] = kariyerVeri[k] || window.tjkCoz('kariyer/' + k + '.enc').then(JSON.parse);
+      const D = await kariyerVeri[k];
+      let e;
+      if (k === 'at') {
+        const s = L[0]; if (!s) return;
+        const dogum = +s.rc.tarih.slice(0, 4) - (+s.yas || 0);
+        e = D.k.find((x) => x[0] === `${ad}|${dogum}|${s.rc.irk}`) || D.k.find((x) => x[0].startsWith(ad + '|') && x[0].endsWith('|' + s.rc.irk));
+      } else e = D.k.find((x) => x[0] === ad) || D.k.find((x) => window.adEslesir && window.adEslesir(x[0], ad));
+      if (!e || !panel.contains(yer)) return;
+      const yl = [...e[2]].sort((a, b) => b[0] - a[0]);
+      const kzVar = yl.every((x) => x.length > 7), top = e[1];
+      const kzAd = tur === 'at' || tur === 'sahip' ? 'Kazanç' : 'Kazandırdığı ikramiye';
+      const ilk = yl[yl.length - 1][0], son = yl[0][0];
+      yer.innerHTML = kart(`Yıllara göre (${ilk === son ? ilk : ilk + '–' + son})`, '',
+        `<div class="tiles">${kutu('Toplam start', N(top[0]))}${kutu('Toplam 1.lik', N(top[1]), top[0] ? P(pct(top[1], top[0])) : '')}${kutu('İlk 3', N(top[1] + top[2] + top[3]))}${kutu('Toplam ' + kzAd.toLocaleLowerCase('tr'), kzVar ? M(top[6]) : '—')}</div>` +
+        tablo([['Yıl', (x) => x[0]], ['Start', (x) => N(x[1]), 1], ['1.lik', (x) => N(x[2]), 1], ['Kazanma', (x) => P(pct(x[2], x[1])), 1], [kzAd, (x) => (x.length > 7 ? M(x[7]) : '—'), 1]], yl, {hepsi: 1}) +
+        (kzVar ? '' : '<p class="d">Bazı yılların kazancı hesaplanıyor; birkaç dakika içinde tamamlanır.</p>'));
+    } catch (err) { /* kariyer verisi yoksa kart gösterilmez */ }
+  }
   const SIRA = ['jokey', 'antr', 'at', 'baba', 'anne', 'sahip'];
   // her tür için isim -> koşular
   const DIZIN = {};
@@ -105,6 +129,7 @@
     h += kart(tur === 'at' ? 'Koşuları' : 'Son birincilikleri', '', tablo([['Tarih', (r) => tarih(r.rc.tarih)], ['Hip.', (r) => r.rc.hip], ['Mesafe', (r) => N(r.rc.mes) + ' ' + r.rc.pist], ['Sıra', (r) => (r.derecesiz ? 'Drcsz' : r.sira + '/' + r.rc.n), 1],
       ...(tur === 'at' ? [] : [['At', (r) => r.at]]), ...(tur === 'jokey' ? [] : [['Jokey', (r) => r.jokey]]), ['Derece', (r) => derece(r.sn)], ['Gny', (r) => (r.g ? nf2.format(r.g) : '—'), 1]], son.slice(0, 15), {bos: 'Bu yıl birinciliği yok.'}));
     const tumKat = {jokey: 'j', antr: 'tr', baba: 'ba', sahip: 'sh', at: 'at'}[tur];
+    if (tumKat) h += '<div class="karne-kariyer"></div>';
     h += `<div class="karne-alt">${tur === 'at' ? '<button type="button" class="btn" data-karne-git="atlar">Ayrıntılı at karnesi</button>' : ''}${tumKat ? '<button type="button" class="btn ikincil" data-karne-git="tum">Tüm zamanlarda gör</button>' : ''}</div>`;
 
     if (!panel) {
@@ -127,6 +152,7 @@
       if (hedef === 'atlar') setTimeout(() => { const i = document.getElementById('atAra'); if (i) { i.value = ad; atKarnesi(); i.scrollIntoView({behavior: 'smooth'}); } }, 30);
       if (hedef === 'tum') setTimeout(() => window.tjkTum?.goster?.(tumKat, ad), 30);
     }));
+    if (tumKat) kariyerCiz(panel, tumKat, ad, tur, L);
     tara(panel);
     panel.querySelector('.karne-kapat').focus();
   }
